@@ -1,42 +1,82 @@
 <template>
   <div class="realtime-asr">
-    <el-card class="asr-card">
-      <template #header>
-        <div class="card-header">
-          <span>实时语音对话</span>
-          <el-tag :type="statusType">{{ statusText }}</el-tag>
+    <div class="asr-container">
+      <!-- 场景选择标签 -->
+      <div class="scene-tabs">
+        <div 
+          v-for="(scene, key) in sceneConfigs" 
+          :key="key"
+          :class="['scene-tab', { active: currentScene === key }]"
+          :style="{ borderColor: currentScene === key ? scene.color : '#e4e7ed' }"
+          @click="switchScene(key)"
+        >
+          <el-icon :size="20" :color="scene.color">
+            <component :is="scene.icon" />
+          </el-icon>
+          <span class="scene-name">{{ scene.name }}</span>
         </div>
-      </template>
+      </div>
 
-      <div class="asr-content">
+      <!-- 对话区域 -->
+      <div class="dialogue-container">
+        <div class="dialogue-header">
+          <div class="header-left">
+            <el-icon :size="18" :color="currentSceneConfig.color">
+              <component :is="currentSceneConfig.icon" />
+            </el-icon>
+            <span class="scene-title">{{ currentSceneConfig.name }}</span>
+          </div>
+          <div class="header-right">
+            <el-tag :type="statusType" size="small">{{ statusText }}</el-tag>
+            <el-button 
+              size="small" 
+              :icon="Delete"
+              @click="clearDialogue"
+              :disabled="dialogueHistory.length === 0"
+              circle
+            />
+          </div>
+        </div>
+
         <!-- 对话历史展示 -->
-        <div class="dialogue-area">
-          <div class="dialogue-messages" ref="messagesContainer">
-            <div 
-              v-for="(msg, index) in dialogueHistory" 
-              :key="index"
-              :class="['message', msg.role]"
-            >
-              <div class="message-content">
-                <div class="message-header">
-                  <el-avatar :size="32" :icon="msg.role === 'user' ? User : ChatDotRound" />
-                  <span class="role-name">{{ msg.role === 'user' ? '我' : 'AI老师' }}</span>
-                </div>
-                <div class="message-text">{{ msg.content }}</div>
-              </div>
+        <div class="dialogue-messages" ref="messagesContainer">
+          <div 
+            v-for="(msg, index) in dialogueHistory" 
+            :key="index"
+            :class="['message', msg.role]"
+          >
+            <div class="message-avatar">
+              <el-avatar 
+                :size="32" 
+                :icon="msg.role === 'user' ? User : ChatDotRound"
+                :style="{ backgroundColor: msg.role === 'user' ? '#409eff' : currentSceneConfig.color }"
+              />
             </div>
-            
-            <!-- 正在输入提示 -->
-            <div v-if="isAIThinking" class="message assistant">
-              <div class="message-content">
-                <div class="message-header">
-                  <el-avatar :size="32" :icon="ChatDotRound" />
-                  <span class="role-name">AI老师</span>
-                </div>
-                <div class="message-text thinking">
-                  <el-icon class="is-loading"><Loading /></el-icon>
-                  正在思考...
-                </div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="role-name">{{ msg.role === 'user' ? '我' : 'AI老师' }}</span>
+                <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
+              </div>
+              <div class="message-text">{{ msg.content }}</div>
+            </div>
+          </div>
+          
+          <!-- 正在输入提示 -->
+          <div v-if="isAIThinking" class="message assistant">
+            <div class="message-avatar">
+              <el-avatar 
+                :size="32" 
+                :icon="ChatDotRound"
+                :style="{ backgroundColor: currentSceneConfig.color }"
+              />
+            </div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="role-name">AI老师</span>
+              </div>
+              <div class="message-text thinking">
+                <el-icon class="is-loading"><Loading /></el-icon>
+                正在思考...
               </div>
             </div>
           </div>
@@ -44,12 +84,10 @@
 
         <!-- 当前识别文本（实时显示） -->
         <div v-if="currentText" class="current-text">
-          <el-alert 
-            :title="`正在识别: ${currentText}`" 
-            type="info" 
-            :closable="false"
-            show-icon
-          />
+          <div class="recognizing-indicator">
+            <el-icon class="is-loading"><Microphone /></el-icon>
+            <span>正在识别: {{ currentText }}</span>
+          </div>
         </div>
 
         <!-- 控制按钮 -->
@@ -57,10 +95,11 @@
           <el-button 
             v-if="!isRecording"
             type="primary" 
-            size="large" 
+            size="default"
             :icon="Microphone"
             @click="startRecording"
             :loading="isInitializing"
+            round
           >
             开始对话
           </el-button>
@@ -68,71 +107,49 @@
           <el-button 
             v-else
             type="danger" 
-            size="large" 
+            size="default"
             :icon="VideoPause"
             @click="stopRecording"
+            round
           >
             停止对话
           </el-button>
-          
-          <el-button 
-            size="large" 
-            :icon="Delete"
-            @click="clearDialogue"
-            :disabled="dialogueHistory.length === 0"
-          >
-            清空对话
-          </el-button>
-        </div>
-
-        <!-- 配置区域 -->
-        <div class="config-area">
-          <el-divider>配置选项</el-divider>
-          
-          <el-form label-width="100px" size="small">
-            <el-row :gutter="20">
-              <el-col :span="12">
-                <el-form-item label="识别引擎">
-                  <el-select v-model="engineModelType" placeholder="选择识别引擎">
-                    <el-option label="16k中文" value="16k_zh" />
-                    <el-option label="16k英文" value="16k_en" />
-                    <el-option label="16k中英混合" value="16k_zh_en" />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-              
-              <el-col :span="12">
-                <el-form-item label="对话场景">
-                  <el-select v-model="currentScene" placeholder="选择对话场景">
-                    <el-option label="日常对话" value="daily" />
-                    <el-option label="餐厅点餐" value="restaurant" />
-                    <el-option label="购物" value="shopping" />
-                    <el-option label="旅行" value="travel" />
-                    <el-option label="面试" value="interview" />
-                    <el-option label="看病" value="medical" />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-            </el-row>
-            
-            <el-row :gutter="20">
-              <el-col :span="12">
-                <el-form-item label="英语水平">
-                  <el-select v-model="englishLevel" placeholder="选择英语水平">
-                    <el-option label="初学者 (A1)" value="A1" />
-                    <el-option label="初级 (A2)" value="A2" />
-                    <el-option label="中级 (B1)" value="B1" />
-                    <el-option label="中高级 (B2)" value="B2" />
-                    <el-option label="高级 (C1)" value="C1" />
-                    <el-option label="精通 (C2)" value="C2" />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-            </el-row>
-          </el-form>
         </div>
       </div>
-    </el-card>
+
+      <!-- 配置区域 -->
+      <div class="config-panel">
+        <el-collapse>
+          <el-collapse-item title="高级设置" name="config">
+            <el-form label-width="80px" size="small">
+              <el-row :gutter="16">
+                <el-col :span="12">
+                  <el-form-item label="识别引擎">
+                    <el-select v-model="engineModelType" placeholder="选择识别引擎">
+                      <el-option label="16k中文" value="16k_zh" />
+                      <el-option label="16k英文" value="16k_en" />
+                      <el-option label="16k中英混合" value="16k_zh_en" />
+                    </el-select>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                  <el-form-item label="英语水平">
+                    <el-select v-model="englishLevel" placeholder="选择英语水平">
+                      <el-option label="初学者 (A1)" value="A1" />
+                      <el-option label="初级 (A2)" value="A2" />
+                      <el-option label="中级 (B1)" value="B1" />
+                      <el-option label="中高级 (B2)" value="B2" />
+                      <el-option label="高级 (C1)" value="C1" />
+                      <el-option label="精通 (C2)" value="C2" />
+                    </el-select>
+                  </el-form-item>
+                </el-col>
+              </el-row>
+            </el-form>
+          </el-collapse-item>
+        </el-collapse>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -145,19 +162,28 @@ import {
   Delete, 
   ChatDotRound,
   User,
-  Loading
+  Loading,
+  ChatLineRound,
+  Food,
+  ShoppingCart,
+  Location,
+  Briefcase,
+  Calendar
 } from '@element-plus/icons-vue'
 import AudioCapture from '@/utils/audio'
 import TencentASR from '@/utils/asr'
 import DeepSeekClient from '@/utils/llm'
-import { buildPrompt } from '@/utils/prompt'
+import { buildPrompt, SCENE_PROMPTS } from '@/utils/prompt'
+
+// 场景配置
+const sceneConfigs = SCENE_PROMPTS
 
 // 状态
 const isRecording = ref(false)
 const isInitializing = ref(false)
 const isAIThinking = ref(false)
-const currentText = ref('') // 当前识别的文本
-const dialogueHistory = ref([]) // 对话历史
+const currentText = ref('')
+const dialogueHistory = ref([])
 const messagesContainer = ref(null)
 
 // 配置
@@ -169,6 +195,11 @@ const englishLevel = ref('B1')
 let audioCapture = null
 let tencentASR = null
 let deepseekClient = null
+
+// 当前场景配置
+const currentSceneConfig = computed(() => {
+  return sceneConfigs[currentScene.value] || sceneConfigs.daily
+})
 
 // 初始化DeepSeek客户端
 function initDeepSeekClient() {
@@ -194,6 +225,30 @@ const statusType = computed(() => {
   if (isInitializing.value) return 'warning'
   return 'info'
 })
+
+/**
+ * 格式化时间
+ */
+function formatTime(timestamp) {
+  if (!timestamp) return ''
+  const date = new Date(timestamp)
+  return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
+}
+
+/**
+ * 切换场景
+ */
+function switchScene(scene) {
+  if (isRecording.value) {
+    ElMessage.warning('请先停止当前对话')
+    return
+  }
+  
+  currentScene.value = scene
+  dialogueHistory.value = []
+  currentText.value = ''
+  ElMessage.success(`已切换到${sceneConfigs[scene].name}场景`)
+}
 
 /**
  * 滚动到底部
@@ -326,7 +381,8 @@ async function sendInitialGreeting() {
     // 添加到对话历史
     dialogueHistory.value.push({
       role: 'assistant',
-      content: response
+      content: response,
+      timestamp: Date.now()
     })
     
     scrollToBottom()
@@ -353,7 +409,8 @@ async function sendText() {
     // 添加用户消息
     dialogueHistory.value.push({
       role: 'user',
-      content: textToSend
+      content: textToSend,
+      timestamp: Date.now()
     })
     
     // 清空当前文本
@@ -384,7 +441,8 @@ async function sendText() {
     // 添加AI回复
     dialogueHistory.value.push({
       role: 'assistant',
-      content: response
+      content: response,
+      timestamp: Date.now()
     })
     
     scrollToBottom()
@@ -432,105 +490,228 @@ onBeforeUnmount(() => {
   height: 100%;
   display: flex;
   justify-content: center;
-  align-items: center;
-  padding: 20px;
+  align-items: flex-start;
+  overflow-y: auto;
 }
 
-.asr-card {
+.asr-container {
   width: 100%;
   max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.card-header {
+/* 场景标签样式 - 紧凑设计 */
+.scene-tabs {
+  background: white;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.scene-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 2px solid #e4e7ed;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: white;
+  flex-shrink: 0;
+}
+
+.scene-tab:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.scene-tab.active {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.scene-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #303133;
+  white-space: nowrap;
+}
+
+/* 对话容器样式 */
+.dialogue-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 500px;
+  max-height: 600px;
+}
+
+.dialogue-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+  border-bottom: 1px solid #ebeef5;
+  flex-shrink: 0;
 }
 
-.asr-content {
-  padding: 20px 0;
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.dialogue-area {
-  margin-bottom: 20px;
+.scene-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #303133;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 对话消息样式 */
 .dialogue-messages {
-  max-height: 400px;
+  flex: 1;
   overflow-y: auto;
   padding: 16px;
-  background: #f5f7fa;
-  border-radius: 8px;
-  border: 1px solid #dcdfe6;
+  background: #fafafa;
+  min-height: 300px;
 }
 
 .message {
-  margin-bottom: 16px;
   display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
 }
 
 .message.user {
-  justify-content: flex-end;
+  flex-direction: row-reverse;
 }
 
-.message.assistant {
-  justify-content: flex-start;
+.message-avatar {
+  flex-shrink: 0;
 }
 
 .message-content {
+  flex: 1;
   max-width: 70%;
-  padding: 12px;
-  border-radius: 8px;
-  background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.message.user .message-content {
-  background: #409eff;
-  color: white;
 }
 
 .message-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 6px;
+  margin-bottom: 6px;
 }
 
 .role-name {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 600;
+  color: #606266;
+}
+
+.message-time {
+  font-size: 11px;
+  color: #c0c4cc;
 }
 
 .message-text {
-  font-size: 14px;
-  line-height: 1.6;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: white;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #303133;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
   white-space: pre-wrap;
 }
 
 .message.user .message-text {
+  background: linear-gradient(135deg, #409eff 0%, #66b1ff 100%);
   color: white;
 }
 
 .thinking {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   color: #909399;
+  background: #f5f7fa;
 }
 
+/* 当前识别文本 */
 .current-text {
-  margin-bottom: 20px;
+  padding: 0 16px 12px;
+  flex-shrink: 0;
 }
 
+.recognizing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%);
+  border-radius: 6px;
+  color: #1890ff;
+  font-size: 13px;
+}
+
+/* 控制按钮 */
 .control-buttons {
   display: flex;
   justify-content: center;
-  gap: 16px;
-  margin-bottom: 20px;
+  padding: 12px;
+  background: white;
+  border-top: 1px solid #ebeef5;
+  flex-shrink: 0;
 }
 
-.config-area {
-  margin-top: 20px;
+/* 配置面板 */
+.config-panel {
+  background: white;
+  border-radius: 8px;
+  padding: 0 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 滚动条样式 */
+.dialogue-messages::-webkit-scrollbar {
+  width: 5px;
+}
+
+.dialogue-messages::-webkit-scrollbar-thumb {
+  background: #c0c4cc;
+  border-radius: 3px;
+}
+
+.dialogue-messages::-webkit-scrollbar-track {
+  background: #f5f7fa;
+}
+
+.realtime-asr::-webkit-scrollbar {
+  width: 6px;
+}
+
+.realtime-asr::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.realtime-asr::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
 }
 </style>
