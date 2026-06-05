@@ -7,18 +7,14 @@
     </el-page-header>
 
     <div class="content">
-      <el-card class="chat-card">
-        <h2>与AI进行口语对话</h2>
-        <p>点击开始按钮，开始实时语音对话练习</p>
-        <el-button type="primary" size="large" :icon="Microphone">开始对话</el-button>
-      </el-card>
+      <RealtimeASR />
     </div>
   </div>
 </template>
 
 <script setup>
 import { useRouter } from 'vue-router'
-import { Microphone } from '@element-plus/icons-vue'
+import RealtimeASR from '@/components/RealtimeASR.vue'
 
 const router = useRouter()
 
@@ -36,25 +32,6 @@ const goBack = () => {
 }
 
 .content {
-  margin-top: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.chat-card {
-  max-width: 600px;
-  text-align: center;
-  padding: 40px;
-}
-
-.chat-card h2 {
-  margin-bottom: 16px;
-  color: #303133;
-}
-
-.chat-card p {
-  margin-bottom: 24px;
-  color: #909399;
+  margin-top: 20px;
 }
 </style>
