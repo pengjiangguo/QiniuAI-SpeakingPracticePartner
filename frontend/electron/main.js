@@ -18,12 +18,15 @@ function createWindow() {
     title: 'AI口语陪练'
   })
 
-  // 开发模式
-  if (process.env.NODE_ENV === 'development') {
+  // 判断是否为开发模式
+  const isDev = !app.isPackaged
+  
+  if (isDev) {
+    // 开发模式：加载Vite开发服务器
     mainWindow.loadURL('http://localhost:5173')
     mainWindow.webContents.openDevTools()
   } else {
-    // 生产模式
+    // 生产模式：加载打包后的文件
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'))
   }
 
