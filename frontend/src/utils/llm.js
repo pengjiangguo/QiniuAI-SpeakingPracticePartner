@@ -73,4 +73,31 @@ class DeepSeekClient {
   }
 }
 
+/**
+ * 生成文本（便捷函数）
+ * @param {String} prompt - 提示词
+ * @param {Object} options - 配置选项
+ */
+export async function generateText(prompt, options = {}) {
+  const apiKey = import.meta.env.VITE_DEEPSEEK_API_KEY || ''
+  
+  if (!apiKey) {
+    throw new Error('未配置DeepSeek API Key')
+  }
+  
+  const client = new DeepSeekClient({
+    apiKey: apiKey,
+    ...options
+  })
+  
+  const messages = [
+    {
+      role: 'user',
+      content: prompt
+    }
+  ]
+  
+  return await client.chat(messages)
+}
+
 export default DeepSeekClient
