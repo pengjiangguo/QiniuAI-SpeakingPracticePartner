@@ -33,6 +33,11 @@
         <RealtimeASR />
       </div>
 
+      <!-- 发音测评 -->
+      <div v-show="currentTab === 'pronunciation'" class="content-panel">
+        <PronunciationEval />
+      </div>
+
       <!-- 词汇学习 -->
       <div v-show="currentTab === 'vocabulary'" class="content-panel">
         <VocabularyPanel />
@@ -65,12 +70,14 @@
 import { ref } from 'vue'
 import { 
   ChatDotRound, 
+  Microphone,
   Collection, 
   DataLine, 
   Clock,
   Setting 
 } from '@element-plus/icons-vue'
 import RealtimeASR from '@/components/RealtimeASR.vue'
+import PronunciationEval from '@/components/PronunciationEval.vue'
 import VocabularyPanel from '@/components/VocabularyPanel.vue'
 import StatisticsPanel from '@/components/StatisticsPanel.vue'
 import HistoryPanel from '@/components/HistoryPanel.vue'
@@ -82,6 +89,7 @@ const currentTab = ref('chat')
 // 功能标签列表
 const functionTabs = [
   { key: 'chat', name: '对话', icon: ChatDotRound },
+  { key: 'pronunciation', name: '测评', icon: Microphone },
   { key: 'vocabulary', name: '词汇', icon: Collection },
   { key: 'statistics', name: '统计', icon: DataLine },
   { key: 'history', name: '历史', icon: Clock }
