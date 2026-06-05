@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.speakingpractice</groupId>
+        <artifactId>speaking-practice-partner</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>speaking-practice-partner-web</artifactId>
+    <packaging>jar</packaging>
+
+    <name>Speaking Practice Partner - Web</name>
+    <description>Web启动模块</description>
+
+    <dependencies>
+        <!-- 所有内部模块 -->
+        <dependency>
+            <groupId>com.speakingpractice</groupId>
+            <artifactId>speaking-practice-partner-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.speakingpractice</groupId>
+            <artifactId>speaking-practice-partner-domain</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.speakingpractice</groupId>
+            <artifactId>speaking-practice-partner-infrastructure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Spring Boot Maven插件 -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.speakingpractice.partner.SpeakingPracticePartnerApplication</mainClass>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

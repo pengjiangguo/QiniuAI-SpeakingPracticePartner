@@ -1,0 +1,67 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /sp
+
+spring:
+  application:
+    name: speaking-practice-partner
+
+  # 数据源配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/speaking_practice_partner?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+
+  # Redis配置
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1ms
+          max-idle: 8
+          min-idle: 0
+
+# MyBatis-Plus配置
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.speakingpractice.partner.domain.entity
+  global-config:
+    db-config:
+      id-type: assign_uuid
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# Python AI服务配置
+python:
+  service:
+    url: http://localhost:8000
+
+# Knife4j API文档配置
+knife4j:
+  enable: true
+  openapi:
+    title: Speaking Practice Partner API
+    description: AI口语陪练系统API文档
+    version: v1.0.0
+    group:
+      default:
+        group-name: default
+        api-rule: package
+        api-package-resources: com.speakingpractice.partner
+
+# 日志配置
+logging:
+  level:
+    com.speakingpractice.partner: debug
+    org.springframework.web: info

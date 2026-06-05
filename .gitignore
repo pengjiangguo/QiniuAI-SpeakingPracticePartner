@@ -1,0 +1,25 @@
+# ========== 依赖与构建产物 ==========
+# Node / Vue
+node_modules/
+dist/
+
+# Java
+target/
+*.class
+*.jar
+
+# Python
+__pycache__/
+*.pyc
+venv/
+
+# ========== 环境与本地配置 ==========
+.env
+.DS_Store
+
+# ========== 本地文档（不提交） ==========
+*.md
+
+# ========== IDE ==========
+.idea/
+.vscode/
