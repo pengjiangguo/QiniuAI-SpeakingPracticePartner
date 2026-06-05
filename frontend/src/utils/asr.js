@@ -12,6 +12,8 @@ class TencentASR {
     this.appId = options.appId || ''
     this.engineModelType = options.engineModelType || '16k_zh'
     this.voiceFormat = options.voiceFormat || 1 // 1: pcm, 4: speex, 6: speex_wb, 8: mp3
+    this.needVad = options.needVad !== undefined ? options.needVad : 1 // 默认开启VAD
+    this.vadSilenceTime = options.vadSilenceTime || 1000 // 静音检测阈值，默认1000ms
     
     this.ws = null
     this.isConnected = false
@@ -87,6 +89,9 @@ class TencentASR {
       expired: expired, // 必需：过期时间戳
       seq: 0, // 语音分片序号，从0开始
       is_end: 0, // 是否结束，0:未结束，1:已结束
+      needvad: this.needVad, // 开启VAD自动断句
+      vad_silence_time: this.vadSilenceTime, // 静音检测阈值
+      filter_empty_result: 0, // 返回空结果，以便收到slice_type=0
     }
     
     // 计算签名
@@ -152,6 +157,10 @@ class TencentASR {
 
   /**
    * 处理接收到的消息
+   * slice_type说明：
+   * 0：一段话开始识别
+   * 1：一段话识别中，voice_text_str 为非稳态结果（该段识别结果还可能变化）
+   * 2：一段话识别结束，voice_text_str 为稳态结果（该段识别结果不再变化）
    */
   handleMessage(data) {
     // code: 0 - 成功，其他 - 失败
@@ -159,9 +168,9 @@ class TencentASR {
     // voice_id: 语音ID
     // message_id: 消息ID
     // result: 识别结果
+    //   - slice_type: 识别结果类型（0/1/2）
     //   - voice_text_str: 识别文本
-    //   - voice_text: 词列表
-    //   - is_end: 是否结束
+    //   - index: 当前一段话结果在整个音频流中的序号
     
     if (data.code !== 0) {
       console.error('ASR识别错误:', data.message)
@@ -172,9 +181,20 @@ class TencentASR {
     }
     
     if (this.onResult && data.result) {
+      const sliceType = data.result.slice_type
+      const text = data.result.voice_text_str || ''
+      const index = data.result.index
+      
+      // slice_type=2 表示一句话识别结束，是稳态结果
+      const isFinal = sliceType === 2
+      
+      console.log(`ASR结果 [slice_type=${sliceType}, index=${index}]:`, text, isFinal ? '(最终结果)' : '(临时结果)')
+      
       this.onResult({
-        text: data.result.voice_text_str,
-        isEnd: data.result.is_end === 1,
+        text: text,
+        isEnd: isFinal, // 当slice_type=2时，表示一句话结束
+        sliceType: sliceType,
+        index: index,
         voiceId: data.voice_id,
         messageId: data.message_id
       })
