@@ -18,45 +18,90 @@ class TencentASR {
     this.onResult = null
     this.onError = null
     this.onEnd = null
+    
+    // 生成唯一的voice_id（UUID格式）
+    this.voiceId = this.generateUUID()
+  }
+
+  /**
+   * 生成UUID
+   */
+  generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0
+      const v = c === 'x' ? r : (r & 0x3 | 0x8)
+      return v.toString(16)
+    })
   }
 
   /**
    * 生成签名
+   * 签名算法：
+   * 1. 对除signature之外的所有参数按字典序排序
+   * 2. 拼接请求URL（不包含协议部分wss://）
+   * 3. 使用HmacSHA1计算签名
    */
-  generateSignature(timestamp) {
-    const signatureStr = `tencentcloudapi.com\n${timestamp}\n`
-    const hash = CryptoJS.HmacSHA1(signatureStr, this.secretKey)
-    return CryptoJS.enc.Base64.stringify(hash)
+  generateSignature(params) {
+    // 1. 获取所有参数key并按字典序排序
+    const sortedKeys = Object.keys(params)
+      .filter(key => key !== 'signature')
+      .sort()
+    
+    // 2. 拼接参数字符串（不进行URL编码）
+    const paramStr = sortedKeys
+      .map(key => `${key}=${params[key]}`)
+      .join('&')
+    
+    // 3. 拼接完整URL（不包含wss://）
+    const urlStr = `asr.cloud.tencent.com/asr/v2/${this.appId}?${paramStr}`
+    
+    console.log('签名原文:', urlStr)
+    
+    // 4. 计算HmacSHA1签名
+    const hash = CryptoJS.HmacSHA1(urlStr, this.secretKey)
+    const signature = CryptoJS.enc.Base64.stringify(hash)
+    
+    console.log('签名结果:', signature)
+    
+    return signature
   }
 
   /**
    * 生成WebSocket连接URL
+   * 文档：https://cloud.tencent.com/document/product/1093/48982
+   * URL格式：wss://asr.cloud.tencent.com/asr/v2/<appid>?{请求参数}
    */
   generateWsUrl() {
     const timestamp = Math.floor(Date.now() / 1000)
-    const signature = this.generateSignature(timestamp)
     
+    // 过期时间：当前时间 + 1小时
+    const expired = timestamp + 3600
+    
+    // 先构建所有参数（不包括signature）
     const params = {
       secretid: this.secretId,
       timestamp: timestamp,
-      signature: signature,
-      appid: this.appId,
       engine_model_type: this.engineModelType,
       voice_format: this.voiceFormat,
-      // 其他可选参数
-      // hotword_id: '', // 热词ID
-      // filter_dirty: 0, // 是否过滤脏话
-      // filter_modal: 0, // 是否过滤语气词
-      // filter_punc: 0, // 是否过滤标点符号
-      // convert_num_mode: 1, // 是否进行数字转换
-      // word_info: 0, // 是否返回词级别信息
+      voice_id: this.voiceId, // 必需：音频流唯一ID
+      expired: expired, // 必需：过期时间戳
+      seq: 0, // 语音分片序号，从0开始
+      is_end: 0, // 是否结束，0:未结束，1:已结束
     }
     
+    // 计算签名
+    const signature = this.generateSignature(params)
+    
+    // 添加signature到参数中
+    params.signature = signature
+    
+    // 构建查询字符串
     const queryString = Object.keys(params)
       .map(key => `${key}=${encodeURIComponent(params[key])}`)
       .join('&')
     
-    return `wss://asr.cloud.tencent.com/asr/v2?${queryString}`
+    // 正确的URL格式：appid在路径中
+    return `wss://asr.cloud.tencent.com/asr/v2/${this.appId}?${queryString}`
   }
 
   /**
