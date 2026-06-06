@@ -177,7 +177,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onBeforeUnmount } from 'vue'
+import { ref, computed, onBeforeUnmount, onMounted } from 'vue'
 import { 
   Refresh, Reading, Document, Microphone, VideoPause, InfoFilled, 
   TrendCharts, Warning 
@@ -197,6 +197,7 @@ const recordingDuration = ref(0)
 const evalResult = ref(null)
 const lastResult = ref(null) // 最后一次评测结果
 const autoStopCountdown = ref(0) // 自动结束倒计时
+const hasInitialized = ref(false) // 是否已初始化
 
 // 录音相关
 let mediaRecorder = null
@@ -461,6 +462,14 @@ function getScoreType(score) {
   if (score >= 70) return 'warning'
   return 'danger'
 }
+
+// 组件加载时自动生成文本
+onMounted(() => {
+  if (!hasInitialized.value) {
+    hasInitialized.value = true
+    generateNewText()
+  }
+})
 
 // 清理资源
 onBeforeUnmount(() => {
