@@ -638,6 +638,18 @@ async function sendText() {
           initTTSClient()
         }
         
+        // 如果正在播放，先停止（用户说话打断AI回复）
+        if (ttsClient.isPlaying) {
+          console.log('自动播放：停止当前播放，准备播放新的AI回复')
+          ttsClient.stop()
+          // 等待一小段时间确保停止完成
+          await new Promise(resolve => setTimeout(resolve, 100))
+        }
+        
+        // 重置状态
+        currentPlayingIndex.value = -1
+        isPaused.value = false
+        
         // 设置当前播放索引（AI消息的索引）
         const aiMessageIndex = dialogueHistory.value.length - 1
         currentPlayingIndex.value = aiMessageIndex
@@ -658,6 +670,7 @@ async function sendText() {
         // 播放完成后重置状态
         currentPlayingIndex.value = -1
         isPaused.value = false
+        console.log('自动播放完成，消息索引:', aiMessageIndex)
         
       } catch (error) {
         console.error('TTS播放失败:', error)
