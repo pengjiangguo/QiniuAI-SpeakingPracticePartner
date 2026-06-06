@@ -199,62 +199,66 @@ class TencentTTS {
    * 播放音频数据
    */
   async playAudioData(audioData) {
-    try {
-      console.log('播放音频数据，大小:', audioData.length, 'bytes, 格式:', this.codec)
-      
-      // 检查音频数据是否有效
-      if (!audioData || audioData.length === 0) {
-        throw new Error('音频数据为空')
-      }
-      
-      // 创建音频上下文
-      if (!this.audioContext) {
-        this.audioContext = new (window.AudioContext || window.webkitAudioContext)({
-          sampleRate: this.sampleRate
-        })
-      }
-      
-      console.log('AudioContext采样率:', this.audioContext.sampleRate)
-      
-      // 根据音频格式解码
-      let audioBuffer
-      
-      if (this.codec === 'mp3') {
-        // MP3格式，使用浏览器自动解码
-        // 创建一个新的ArrayBuffer副本，避免detached buffer问题
-        const arrayBuffer = new ArrayBuffer(audioData.length)
-        const view = new Uint8Array(arrayBuffer)
-        view.set(audioData)
+    return new Promise(async (resolve, reject) => {
+      try {
+        console.log('播放音频数据，大小:', audioData.length, 'bytes, 格式:', this.codec)
         
-        console.log('创建ArrayBuffer副本，大小:', arrayBuffer.byteLength, 'bytes')
-        audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer)
-      } else {
-        // PCM格式，手动解码
-        audioBuffer = this.decodePCM(audioData)
-      }
-      
-      console.log('AudioBuffer时长:', audioBuffer.duration, '秒')
-      
-      // 创建音频源
-      this.currentSource = this.audioContext.createBufferSource()
-      this.currentSource.buffer = audioBuffer
-      this.currentSource.connect(this.audioContext.destination)
-      
-      // 播放
-      this.isPlaying = true
-      this.currentSource.start(0)
-      
-      // 播放结束
-      this.currentSource.onended = () => {
+        // 检查音频数据是否有效
+        if (!audioData || audioData.length === 0) {
+          reject(new Error('音频数据为空'))
+          return
+        }
+        
+        // 创建音频上下文
+        if (!this.audioContext) {
+          this.audioContext = new (window.AudioContext || window.webkitAudioContext)({
+            sampleRate: this.sampleRate
+          })
+        }
+        
+        console.log('AudioContext采样率:', this.audioContext.sampleRate)
+        
+        // 根据音频格式解码
+        let audioBuffer
+        
+        if (this.codec === 'mp3') {
+          // MP3格式，使用浏览器自动解码
+          // 创建一个新的ArrayBuffer副本，避免detached buffer问题
+          const arrayBuffer = new ArrayBuffer(audioData.length)
+          const view = new Uint8Array(arrayBuffer)
+          view.set(audioData)
+          
+          console.log('创建ArrayBuffer副本，大小:', arrayBuffer.byteLength, 'bytes')
+          audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer)
+        } else {
+          // PCM格式，手动解码
+          audioBuffer = this.decodePCM(audioData)
+        }
+        
+        console.log('AudioBuffer时长:', audioBuffer.duration, '秒')
+        
+        // 创建音频源
+        this.currentSource = this.audioContext.createBufferSource()
+        this.currentSource.buffer = audioBuffer
+        this.currentSource.connect(this.audioContext.destination)
+        
+        // 播放
+        this.isPlaying = true
+        this.currentSource.start(0)
+        
+        // 播放结束
+        this.currentSource.onended = () => {
+          this.isPlaying = false
+          console.log('音频播放结束')
+          resolve() // 播放完成后resolve
+        }
+        
+      } catch (error) {
+        console.error('播放音频失败:', error)
         this.isPlaying = false
-        console.log('音频播放结束')
+        reject(error)
       }
-      
-    } catch (error) {
-      console.error('播放音频失败:', error)
-      this.isPlaying = false
-      throw error
-    }
+    })
   }
   
   /**
@@ -509,6 +513,18 @@ class TencentTTS {
    * 停止播放
    */
   stop() {
+    // 停止音频播放
+    if (this.currentSource) {
+      try {
+        this.currentSource.stop()
+        this.currentSource.disconnect()
+        this.currentSource = null
+        console.log('音频播放已停止')
+      } catch (error) {
+        console.error('停止音频播放失败:', error)
+      }
+    }
+    
     // 关闭WebSocket
     if (this.ws) {
       this.ws.close()
