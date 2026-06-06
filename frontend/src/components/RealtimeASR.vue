@@ -1,19 +1,73 @@
 <template>
   <div class="realtime-asr">
     <div class="asr-container">
-      <!-- 场景选择标签 -->
-      <div class="scene-tabs">
-        <div 
-          v-for="(scene, key) in sceneConfigs" 
-          :key="key"
-          :class="['scene-tab', { active: currentScene === key }]"
-          :style="{ borderColor: currentScene === key ? scene.color : '#e4e7ed' }"
-          @click="switchScene(key)"
-        >
-          <el-icon :size="20" :color="scene.color">
-            <component :is="scene.icon" />
-          </el-icon>
-          <span class="scene-name">{{ scene.name }}</span>
+      <!-- 左侧面板 -->
+      <div class="left-panel">
+        <!-- 场景选择标签 -->
+        <div class="scene-tabs">
+          <div class="scene-tabs-header">
+            <el-icon :size="16"><Grid /></el-icon>
+            <span>对话场景</span>
+          </div>
+          <div class="scene-tabs-list">
+            <div 
+              v-for="(scene, key) in sceneConfigs" 
+              :key="key"
+              :class="['scene-tab', { active: currentScene === key }]"
+              :style="{ borderColor: currentScene === key ? scene.color : '#e4e7ed' }"
+              @click="switchScene(key)"
+            >
+              <el-icon :size="20" :color="scene.color">
+                <component :is="scene.icon" />
+              </el-icon>
+              <span class="scene-name">{{ scene.name }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 配置区域 -->
+        <div class="config-panel">
+          <el-collapse>
+            <el-collapse-item title="高级设置" name="config">
+              <el-form label-width="80px" size="small">
+                <el-form-item label="识别引擎">
+                  <el-select v-model="engineModelType" placeholder="选择识别引擎">
+                    <el-option label="16k英文" value="16k_en" />
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="英语水平">
+                  <el-select v-model="englishLevel" placeholder="选择英语水平">
+                    <el-option label="初学者 (A1)" value="A1" />
+                    <el-option label="初级 (A2)" value="A2" />
+                    <el-option label="中级 (B1)" value="B1" />
+                    <el-option label="中高级 (B2)" value="B2" />
+                    <el-option label="高级 (C1)" value="C1" />
+                    <el-option label="精通 (C2)" value="C2" />
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="TTS音色">
+                  <el-select v-model="ttsVoiceType" placeholder="选择音色">
+                    <el-option 
+                      v-for="voice in TTS_VOICES" 
+                      :key="voice.value"
+                      :label="voice.label" 
+                      :value="voice.value"
+                    >
+                      <span>{{ voice.label }}</span>
+                      <span style="color: #8492a6; font-size: 12px; margin-left: 8px;">{{ voice.description }}</span>
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="自动播放">
+                  <el-switch 
+                    v-model="autoPlayTTS"
+                    active-text="开启"
+                    inactive-text="关闭"
+                  />
+                </el-form-item>
+              </el-form>
+            </el-collapse-item>
+          </el-collapse>
         </div>
       </div>
 
@@ -218,63 +272,6 @@
           </el-button>
         </div>
       </div>
-
-      <!-- 配置区域 -->
-      <div class="config-panel">
-        <el-collapse>
-          <el-collapse-item title="高级设置" name="config">
-            <el-form label-width="80px" size="small">
-              <el-row :gutter="16">
-                <el-col :span="12">
-                  <el-form-item label="识别引擎">
-                    <el-select v-model="engineModelType" placeholder="选择识别引擎">
-                      <el-option label="16k英文" value="16k_en" />
-                    </el-select>
-                  </el-form-item>
-                </el-col>
-                <el-col :span="12">
-                  <el-form-item label="英语水平">
-                    <el-select v-model="englishLevel" placeholder="选择英语水平">
-                      <el-option label="初学者 (A1)" value="A1" />
-                      <el-option label="初级 (A2)" value="A2" />
-                      <el-option label="中级 (B1)" value="B1" />
-                      <el-option label="中高级 (B2)" value="B2" />
-                      <el-option label="高级 (C1)" value="C1" />
-                      <el-option label="精通 (C2)" value="C2" />
-                    </el-select>
-                  </el-form-item>
-                </el-col>
-              </el-row>
-              <el-row :gutter="16">
-                <el-col :span="12">
-                  <el-form-item label="TTS音色">
-                    <el-select v-model="ttsVoiceType" placeholder="选择音色">
-                      <el-option 
-                        v-for="voice in TTS_VOICES" 
-                        :key="voice.value"
-                        :label="voice.label" 
-                        :value="voice.value"
-                      >
-                        <span>{{ voice.label }}</span>
-                        <span style="color: #8492a6; font-size: 12px; margin-left: 8px;">{{ voice.description }}</span>
-                      </el-option>
-                    </el-select>
-                  </el-form-item>
-                </el-col>
-                <el-col :span="12">
-                  <el-form-item label="自动播放">
-                    <el-switch 
-                      v-model="autoPlayTTS"
-                      active-text="开启"
-                      inactive-text="关闭"
-                    />
-                  </el-form-item>
-                </el-col>
-              </el-row>
-            </el-form>
-          </el-collapse-item>
-        </el-collapse>
-      </div>
     </div>
   </div>
 </template>
@@ -296,7 +293,8 @@ import {
   Briefcase,
   Calendar,
   TrendCharts,
-  VideoPlay
+  VideoPlay,
+  Grid
 } from '@element-plus/icons-vue'
 import AudioCapture from '@/utils/audio'
 import TencentASR from '@/utils/asr'
@@ -907,43 +905,67 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  overflow-y: auto;
+  overflow: hidden; /* 禁止外层滚动 */
 }
 
 .asr-container {
   width: 100%;
-  max-width: 900px;
+  max-width: 1400px;
+  height: 100%; /* 占满父容器高度 */
+  display: flex;
+  gap: 16px;
+  /* padding: 20px; */
+}
+
+/* 左侧面板 */
+.left-panel {
+  width: 280px;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-/* 场景标签样式 - 紧凑设计 */
+/* 场景标签样式 - 垂直布局 */
 .scene-tabs {
   background: white;
   border-radius: 8px;
   padding: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.scene-tabs-header {
   display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #ebeef5;
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.scene-tabs-list {
+  display: flex;
+  flex-direction: column;
   gap: 8px;
-  flex-wrap: wrap;
 }
 
 .scene-tab {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
+  gap: 8px;
+  padding: 10px 12px;
   border: 2px solid #e4e7ed;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.3s;
   background: white;
-  flex-shrink: 0;
 }
 
 .scene-tab:hover {
-  transform: translateY(-1px);
+  transform: translateX(2px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
@@ -959,16 +981,24 @@ onBeforeUnmount(() => {
   white-space: nowrap;
 }
 
+/* 配置面板样式 */
+.config-panel {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
 /* 对话容器样式 */
 .dialogue-container {
+  flex: 1;
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  min-height: 500px;
-  max-height: 600px;
+  height: 100%; /* 占满父容器高度 */
 }
 
 .dialogue-header {
@@ -1002,10 +1032,10 @@ onBeforeUnmount(() => {
 /* 对话消息样式 */
 .dialogue-messages {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: auto; /* 垂直滚动 */
   padding: 16px;
   background: #fafafa;
-  min-height: 300px;
+  min-height: 0; /* 重要：允许flex子项收缩 */
 }
 
 .message {
