@@ -294,7 +294,7 @@ const messagesContainer = ref(null)
 const pronunciationResults = ref({}) // 发音测评结果，key为消息索引
 
 // 配置
-const engineModelType = ref('16k_zh_en')
+const engineModelType = ref('16k_en')
 const currentScene = ref('daily')
 const englishLevel = ref('B1')
 const ttsVoiceType = ref(0) // TTS音色
