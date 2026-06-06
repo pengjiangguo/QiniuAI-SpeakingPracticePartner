@@ -61,14 +61,38 @@
               
               <!-- AI消息播放按钮 -->
               <div v-if="msg.role === 'assistant'" class="message-actions">
+                <!-- 未播放状态 -->
                 <el-button 
+                  v-if="currentPlayingIndex !== index"
                   size="small" 
                   :icon="VideoPlay"
-                  @click="playTTS(msg.content)"
+                  @click="playTTS(msg.content, index)"
                   text
                 >
                   播放语音
                 </el-button>
+                
+                <!-- 正在播放状态 -->
+                <template v-else>
+                  <el-button 
+                    v-if="!isPaused"
+                    size="small" 
+                    :icon="VideoPause"
+                    @click="pauseTTS()"
+                    text
+                  >
+                    暂停
+                  </el-button>
+                  <el-button 
+                    v-else
+                    size="small" 
+                    :icon="VideoPlay"
+                    @click="resumeTTS()"
+                    text
+                  >
+                    继续播放
+                  </el-button>
+                </template>
               </div>
               
               <!-- 发音测评结果 -->
@@ -299,6 +323,10 @@ const currentScene = ref('daily')
 const englishLevel = ref('B1')
 const ttsVoiceType = ref(0) // TTS音色
 const autoPlayTTS = ref(true) // 自动播放AI回复
+
+// 播放状态管理
+const currentPlayingIndex = ref(-1) // 当前正在播放的消息索引
+const isPaused = ref(false) // 是否暂停
 
 // 工具实例
 let audioCapture = null
@@ -607,11 +635,23 @@ async function sendText() {
           initTTSClient()
         }
         
+        // 设置当前播放索引（AI消息的索引）
+        const aiMessageIndex = dialogueHistory.value.length - 1
+        currentPlayingIndex.value = aiMessageIndex
+        isPaused.value = false
+        
         // 播放语音
         await ttsClient.speak(aiResponse)
+        
+        // 播放完成后重置状态
+        currentPlayingIndex.value = -1
+        isPaused.value = false
+        
       } catch (error) {
         console.error('TTS播放失败:', error)
         // TTS失败不影响整体流程
+        currentPlayingIndex.value = -1
+        isPaused.value = false
       }
     }
   } catch (error) {
@@ -645,23 +685,77 @@ function cleanup() {
 /**
  * 播放TTS语音
  */
-async function playTTS(text) {
+async function playTTS(text, index) {
   try {
     // 初始化TTS客户端
     if (!ttsClient) {
       initTTSClient()
     }
     
-    // 如果正在播放，先停止
-    if (ttsClient.isPlaying) {
+    // 如果正在播放其他消息，先停止
+    if (ttsClient.isPlaying && currentPlayingIndex.value !== index) {
       ttsClient.stop()
+      currentPlayingIndex.value = -1
+      isPaused.value = false
     }
+    
+    // 设置当前播放索引
+    currentPlayingIndex.value = index
+    isPaused.value = false
     
     // 播放语音
     await ttsClient.speak(text)
+    
+    // 播放完成后重置状态
+    currentPlayingIndex.value = -1
+    isPaused.value = false
+    
   } catch (error) {
     console.error('TTS播放失败:', error)
     ElMessage.error('语音播放失败')
+    currentPlayingIndex.value = -1
+    isPaused.value = false
+  }
+}
+
+/**
+ * 暂停TTS播放
+ */
+function pauseTTS() {
+  try {
+    if (ttsClient && ttsClient.isPlaying) {
+      // 停止播放（TTS不支持真正的暂停，只能停止）
+      ttsClient.stop()
+      isPaused.value = true
+      ElMessage.info('已暂停播放')
+    }
+  } catch (error) {
+    console.error('暂停播放失败:', error)
+  }
+}
+
+/**
+ * 继续播放TTS
+ */
+async function resumeTTS() {
+  try {
+    // 获取当前消息
+    const currentMessage = dialogueHistory.value[currentPlayingIndex.value]
+    if (!currentMessage) return
+    
+    // 重新播放
+    isPaused.value = false
+    await ttsClient.speak(currentMessage.content)
+    
+    // 播放完成后重置状态
+    currentPlayingIndex.value = -1
+    isPaused.value = false
+    
+  } catch (error) {
+    console.error('继续播放失败:', error)
+    ElMessage.error('继续播放失败')
+    currentPlayingIndex.value = -1
+    isPaused.value = false
   }
 }
 
