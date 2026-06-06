@@ -42,7 +42,7 @@
         <div class="control-card">
           <div class="control-header">
             <el-icon :size="20" color="#67c23a"><Microphone /></el-icon>
-            <span>按住说话进行录音</span>
+            <span>点击按钮开始录音</span>
           </div>
           
           <div class="record-button-area">
@@ -50,9 +50,7 @@
               :type="isRecording ? 'danger' : 'primary'"
               size="large"
               :icon="isRecording ? VideoPause : Microphone"
-              @mousedown="startRecording"
-              @mouseup="stopRecording"
-              @mouseleave="stopRecording"
+              @click="toggleRecording"
               :disabled="!currentText"
               :loading="isConnecting"
               round
@@ -64,7 +62,7 @@
           
           <div class="record-tip">
             <el-icon><InfoFilled /></el-icon>
-            <span>按住按钮开始录音，松开结束录音并获取评测结果</span>
+            <span>点击开始录音，读完文本后自动结束</span>
           </div>
           
           <!-- 录音时长显示 -->
@@ -75,6 +73,20 @@
             </div>
             <div class="recording-time">
               录音时长：{{ recordingDuration }}秒
+              <span v-if="autoStopCountdown > 0" class="countdown">
+                （{{ autoStopCountdown }}秒后自动结束）
+              </span>
+            </div>
+            <div v-if="lastResult" class="realtime-score">
+              <el-tag :type="getScoreType(lastResult.pronAccuracy)" size="small">
+                实时评分：{{ Math.round(lastResult.pronAccuracy) }}分
+              </el-tag>
+              <el-tag 
+                :type="lastResult.words && lastResult.words.length >= currentText.trim().split(/\s+/).filter(w => w.length > 0).length ? 'success' : 'info'" 
+                size="small"
+              >
+                单词进度：{{ lastResult.words ? lastResult.words.length : 0 }}/{{ currentText.trim().split(/\s+/).filter(w => w.length > 0).length }}
+              </el-tag>
             </div>
           </div>
         </div>
@@ -183,13 +195,20 @@ const isRecording = ref(false)
 const isConnecting = ref(false)
 const recordingDuration = ref(0)
 const evalResult = ref(null)
+const lastResult = ref(null) // 最后一次评测结果
+const autoStopCountdown = ref(0) // 自动结束倒计时
 
 // 录音相关
 let mediaRecorder = null
 let audioContext = null
 let audioChunks = []
 let recordingTimer = null
+let autoStopTimer = null // 自动结束定时器
 let soeClient = null
+
+// 自动结束配置
+const AUTO_STOP_DELAY = 3 // 完整度达到100%后等待3秒自动结束
+const MIN_RECORDING_TIME = 2 // 最少录音时间2秒
 
 // 难度文本
 const difficultyText = computed(() => {
@@ -204,9 +223,18 @@ const difficultyText = computed(() => {
 // 录音按钮文本
 const recordButtonText = computed(() => {
   if (isConnecting.value) return '连接中...'
-  if (isRecording.value) return '松开结束录音'
-  return '按住开始录音'
+  if (isRecording.value) return '录音中...'
+  return '开始录音'
 })
+
+// 切换录音状态
+function toggleRecording() {
+  if (isRecording.value) {
+    stopRecording()
+  } else {
+    startRecording()
+  }
+}
 
 // 生成新文本
 async function generateNewText() {
@@ -253,6 +281,8 @@ async function startRecording() {
   
   try {
     isConnecting.value = true
+    lastResult.value = null
+    autoStopCountdown.value = 0
     
     // 初始化口语评测客户端
     soeClient = new TencentSOE({
@@ -267,6 +297,37 @@ async function startRecording() {
     // 设置回调
     soeClient.onResult = (result) => {
       console.log('评测结果:', result)
+      
+      // 更新最后一次结果
+      lastResult.value = result
+      
+      // 获取参考文本的单词数量
+      const referenceWords = currentText.value.trim().split(/\s+/).filter(w => w.length > 0)
+      const totalWords = referenceWords.length
+      
+      // 获取已识别的单词数量
+      const recognizedWords = result.words ? result.words.length : 0
+      
+      console.log('参考文本单词数:', totalWords, '已识别单词数:', recognizedWords)
+      console.log('录音时长:', recordingDuration.value)
+      
+      // 检查是否读完最后一个单词
+      // 已识别单词数 >= 参考文本单词数
+      // 录音时长 >= 最小时长
+      const hasReadAllWords = recognizedWords >= totalWords
+      const hasMinTime = recordingDuration.value >= MIN_RECORDING_TIME
+      
+      console.log('是否读完所有单词:', hasReadAllWords, '是否满足最小时长:', hasMinTime)
+      
+      if (hasReadAllWords && hasMinTime) {
+        // 已读完所有单词，开始倒计时自动结束
+        if (autoStopCountdown.value === 0) {
+          ElMessage.success(`已读完所有单词（${recognizedWords}/${totalWords}）！3秒后自动结束`)
+          startAutoStopCountdown()
+        }
+      }
+      
+      // 如果是最终结果，显示完整评测结果
       if (result.isFinal) {
         evalResult.value = result
         ElMessage.success('评测完成')
@@ -276,6 +337,7 @@ async function startRecording() {
     soeClient.onError = (error) => {
       console.error('评测错误:', error)
       ElMessage.error(`评测失败: ${error.message}`)
+      stopRecording()
     }
     
     // 连接到口语评测服务
@@ -336,6 +398,21 @@ async function startRecording() {
   }
 }
 
+// 开始自动结束倒计时
+function startAutoStopCountdown() {
+  autoStopCountdown.value = AUTO_STOP_DELAY
+  
+  autoStopTimer = setInterval(() => {
+    autoStopCountdown.value--
+    
+    if (autoStopCountdown.value <= 0) {
+      clearInterval(autoStopTimer)
+      autoStopTimer = null
+      stopRecording()
+    }
+  }, 1000)
+}
+
 // 停止录音
 function stopRecording() {
   if (!isRecording.value) return
@@ -346,6 +423,13 @@ function stopRecording() {
   if (recordingTimer) {
     clearInterval(recordingTimer)
     recordingTimer = null
+  }
+  
+  // 停止自动结束倒计时
+  if (autoStopTimer) {
+    clearInterval(autoStopTimer)
+    autoStopTimer = null
+    autoStopCountdown.value = 0
   }
   
   // 结束评测
@@ -382,6 +466,9 @@ function getScoreType(score) {
 onBeforeUnmount(() => {
   if (recordingTimer) {
     clearInterval(recordingTimer)
+  }
+  if (autoStopTimer) {
+    clearInterval(autoStopTimer)
   }
   if (soeClient) {
     soeClient.disconnect()
@@ -564,6 +651,23 @@ onBeforeUnmount(() => {
   font-size: 14px;
   color: #f56c6c;
   font-weight: 600;
+}
+
+.countdown {
+  color: #67c23a;
+  font-weight: 600;
+  animation: blink 1s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.realtime-score {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
 }
 
 /* 评测结果区 */
