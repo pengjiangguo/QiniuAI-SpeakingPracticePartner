@@ -3,6 +3,28 @@
     <div class="asr-container">
       <!-- 左侧面板 -->
       <div class="left-panel">
+        <!-- 对话注意事项 -->
+        <div class="dialogue-notice">
+          <div class="notice-header">
+            <el-icon :size="16" color="#e6a23c"><Warning /></el-icon>
+            <span class="notice-title">对话注意事项</span>
+          </div>
+          <div class="notice-list">
+            <div class="notice-item">
+              <span class="notice-number">1.</span>
+              <span class="notice-text">保持周围环境安静，避免噪音干扰语音识别</span>
+            </div>
+            <div class="notice-item">
+              <span class="notice-number">2.</span>
+              <span class="notice-text">说话时语速适中，吐字清晰，提高识别准确率</span>
+            </div>
+            <div class="notice-item">
+              <span class="notice-number">3.</span>
+              <span class="notice-text">避免同时播放其他音频，防止干扰语音识别</span>
+            </div>
+          </div>
+        </div>
+        
         <!-- 场景选择标签 -->
         <div class="scene-tabs">
           <div class="scene-tabs-header">
@@ -1030,9 +1052,78 @@ onBeforeUnmount(() => {
 .left-panel {
   width: 280px;
   flex-shrink: 0;
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 8px; /* 为滚动条留出空间 */
+}
+
+/* 自定义滚动条样式 */
+.left-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.left-panel::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.left-panel::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.left-panel::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 对话注意事项 */
+.dialogue-notice {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  padding: 12px;
+  background: #fff7e6;
+  border: 1px solid #ffd591;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #874d00;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.notice-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.notice-title {
+  font-size: 14px;
+}
+
+.notice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notice-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.notice-number {
+  font-weight: 500;
+  color: #e6a23c;
+  min-width: 20px;
+}
+
+.notice-text {
+  flex: 1;
+  color: #874d00;
 }
 
 /* 场景标签样式 - 垂直布局 */
@@ -1041,6 +1132,7 @@ onBeforeUnmount(() => {
   border-radius: 8px;
   padding: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 12px;
 }
 
 .scene-tabs-header {
