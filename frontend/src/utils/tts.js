@@ -12,7 +12,7 @@ class TencentTTS {
     this.appId = options.appId || ''
     
     // TTS参数
-    this.voiceType = options.voiceType || 0 // 音色类型
+    this.voiceType = options.voiceType || 502001 // 音色类型，默认使用智小柔（聊天女声）
     this.speed = options.speed || 0 // 语速，-2到6
     this.volume = options.volume || 0 // 音量，-10到10
     this.sampleRate = options.sampleRate || 16000 // 采样率
@@ -362,37 +362,30 @@ class TencentTTS {
 }
 
 /**
- * TTS音色列表
- * 完整列表：https://cloud.tencent.com/document/product/1073/92668
+ * TTS音色列表（仅英文）
+ * 官方文档：https://cloud.tencent.com/document/product/1073/92668
+ * 
+ * 注意：音色ID必须使用官方文档中的正确ID
  */
 export const TTS_VOICES = [
-  // 标准音色
-  { value: 0, label: '默认女声', description: '标准女声' },
-  { value: 1, label: '默认男声', description: '标准男声' },
+  // 超自然大模型音色（支持中英文，音质最好）
+  { value: 502001, label: '智小柔', description: '聊天女声（超自然）', type: '超自然大模型' },
+  { value: 502003, label: '智小敏', description: '聊天女声（超自然）', type: '超自然大模型' },
+  { value: 502004, label: '智小满', description: '营销女声（超自然）', type: '超自然大模型' },
+  { value: 502005, label: '智小解', description: '解说男声（超自然）', type: '超自然大模型' },
+  { value: 502006, label: '智小悟', description: '聊天男声（超自然）', type: '超自然大模型' },
+  { value: 502007, label: '智小虎', description: '聊天童声（超自然）', type: '超自然大模型' },
+  { value: 602004, label: '暖心阿灿', description: '聊天男声（超自然）', type: '超自然大模型' },
+  { value: 602005, label: '专业梓欣', description: '聊天女声（超自然）', type: '超自然大模型' },
+  { value: 603004, label: '温柔小柠', description: '聊天女声（超自然）', type: '超自然大模型' },
+  { value: 603007, label: '邻家女孩', description: '聊天女声（超自然）', type: '超自然大模型' },
   
-  // 情感音色
-  { value: 1001, label: '智琪', description: '情感女声' },
-  { value: 1002, label: '智瑜', description: '情感女声' },
-  { value: 1003, label: '智聆', description: '情感女声' },
-  { value: 1004, label: '智美', description: '情感女声' },
-  { value: 1005, label: '智强', description: '情感男声' },
-  { value: 1006, label: '智杰', description: '情感男声' },
-  { value: 1007, label: '智彬', description: '情感男声' },
-  { value: 1008, label: '智婷', description: '情感女声' },
-  { value: 1009, label: '智晖', description: '情感男声' },
-  { value: 1010, label: '智刚', description: '情感男声' },
-  { value: 1011, label: '智萌', description: '情感女声' },
-  { value: 1012, label: '智言', description: '情感男声' },
-  { value: 1013, label: '智琳', description: '情感女声' },
-  { value: 1014, label: '智浩', description: '情感男声' },
-  { value: 1015, label: '智楠', description: '情感女声' },
-  { value: 1016, label: '智辉', description: '情感男声' },
-  { value: 1017, label: '智燕', description: '情感女声' },
-  { value: 1018, label: '智敏', description: '情感女声' },
+  // 大模型音色（专门支持英文）
+  { value: 501008, label: 'WeJames', description: '外语男声（英文）', type: '大模型' },
+  { value: 501009, label: 'WeWinny', description: '外语女声（英文）', type: '大模型' },
   
-  // 大模型音色
-  { value: 101001, label: '大模型女声', description: '超自然女声' },
-  { value: 101002, label: '大模型男声', description: '超自然男声' }
+  // 精品音色（专门支持英文）
+  { value: 101050, label: 'WeJack', description: '英文男声', type: '精品' }
 ]
 
 export default TencentTTS

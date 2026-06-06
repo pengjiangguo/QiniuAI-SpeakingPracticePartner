@@ -204,9 +204,7 @@
                 <el-col :span="12">
                   <el-form-item label="识别引擎">
                     <el-select v-model="engineModelType" placeholder="选择识别引擎">
-                      <el-option label="16k中文" value="16k_zh" />
                       <el-option label="16k英文" value="16k_en" />
-                      <el-option label="16k中英混合" value="16k_zh_en" />
                     </el-select>
                   </el-form-item>
                 </el-col>
