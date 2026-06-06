@@ -214,6 +214,58 @@
                   </div>
                 </div>
               </div>
+              
+              <!-- 语法纠错结果 -->
+              <div v-if="msg.role === 'user' && grammarResults[index]" :class="['grammar-result', { 'grammar-result-success': !grammarResults[index].has_error }]">
+                <div class="grammar-header">
+                  <el-icon :size="14" :color="grammarResults[index].has_error ? '#e6a23c' : '#67c23a'"><Warning /></el-icon>
+                  <span>语法纠错</span>
+                </div>
+                
+                <div class="grammar-content">
+                  <!-- 有错误时显示 -->
+                  <template v-if="grammarResults[index].has_error">
+                    <div class="grammar-item">
+                      <span class="grammar-label">您说：</span>
+                      <span class="grammar-text">{{ grammarResults[index].original_sentence }}</span>
+                    </div>
+                    
+                    <div v-if="grammarResults[index].corrected_sentence" class="grammar-item">
+                      <span class="grammar-label">修正：</span>
+                      <span class="grammar-text corrected">{{ grammarResults[index].corrected_sentence }}</span>
+                    </div>
+                    
+                    <div v-if="grammarResults[index].errors && grammarResults[index].errors.length > 0" class="grammar-errors">
+                      <div v-for="(error, eIndex) in grammarResults[index].errors" :key="eIndex" class="grammar-error-item">
+                        <el-tag :type="getErrorType(error.error_type)" size="small">
+                          {{ error.error_type }}
+                        </el-tag>
+                        <span class="error-message">{{ error.message }}</span>
+                      </div>
+                    </div>
+                    
+                    <div v-if="grammarResults[index].explanation" class="grammar-explanation">
+                      <span class="grammar-label">解释：</span>
+                      <span class="grammar-text">{{ grammarResults[index].explanation }}</span>
+                    </div>
+                  </template>
+                  
+                  <!-- 无错误时显示 -->
+                  <template v-else>
+                    <div class="grammar-item">
+                      <span class="grammar-label">您说：</span>
+                      <span class="grammar-text">{{ grammarResults[index].original_sentence }}</span>
+                    </div>
+                    <div class="grammar-success">
+                      <el-icon :size="16" color="#67c23a"><SuccessFilled /></el-icon>
+                      <span class="success-text">语法正确，表达自然！</span>
+                    </div>
+                    <div v-if="grammarResults[index].evaluation" class="grammar-evaluation">
+                      <span class="grammar-text">{{ grammarResults[index].evaluation }}</span>
+                    </div>
+                  </template>
+                </div>
+              </div>
             </div>
           </div>
           
@@ -294,7 +346,9 @@ import {
   Calendar,
   TrendCharts,
   VideoPlay,
-  Grid
+  Grid,
+  Warning,
+  SuccessFilled
 } from '@element-plus/icons-vue'
 import AudioCapture from '@/utils/audio'
 import TencentASR from '@/utils/asr'
@@ -302,6 +356,7 @@ import DeepSeekClient from '@/utils/llm'
 import TencentSOE from '@/utils/soe'
 import TencentTTS, { TTS_VOICES } from '@/utils/tts'
 import { buildPrompt, SCENE_PROMPTS } from '@/utils/prompt'
+import { correctGrammar } from '@/utils/grammar'
 
 // 场景配置
 const sceneConfigs = SCENE_PROMPTS
@@ -314,6 +369,7 @@ const currentText = ref('')
 const dialogueHistory = ref([])
 const messagesContainer = ref(null)
 const pronunciationResults = ref({}) // 发音测评结果，key为消息索引
+const grammarResults = ref({}) // 语法纠错结果，key为消息索引
 
 // 配置
 const engineModelType = ref('16k_en')
@@ -412,6 +468,21 @@ function getScoreColor(score) {
   if (score >= 80) return '#409eff'
   if (score >= 70) return '#e6a23c'
   return '#f56c6c'
+}
+
+/**
+ * 获取错误类型标签
+ */
+function getErrorType(errorType) {
+  const typeMap = {
+    '语法错误': 'danger',
+    '表达不自然': 'warning',
+    '用词不当': 'warning',
+    '时态错误': 'danger',
+    '拼写错误': 'danger',
+    '其他': 'info'
+  }
+  return typeMap[errorType] || 'info'
 }
 
 /**
@@ -582,8 +653,8 @@ async function sendText() {
     
     scrollToBottom()
     
-    // 并行执行：AI回复 + 发音测评
-    const [aiResponse, pronunciationResult] = await Promise.all([
+    // 并行执行：AI回复 + 发音测评 + 语法纠错
+    const [aiResponse, pronunciationResult, grammarResult] = await Promise.all([
       // AI回复
       (async () => {
         // 检查是否已取消
@@ -648,15 +719,39 @@ async function sendText() {
           console.error('发音测评失败:', error)
           return null
         }
+      })(),
+      
+      // 语法纠错
+      (async () => {
+        try {
+          // 检查是否已取消
+          if (abortSignal.aborted) {
+            return null
+          }
+          
+          console.log('开始语法纠错，文本:', textToSend)
+          const result = await correctGrammar(textToSend, true)
+          console.log('语法纠错结果:', result)
+          return result
+        } catch (error) {
+          console.error('语法纠错失败:', error)
+          return null
+        }
       })()
     ])
     
     console.log('AI回复:', aiResponse)
     console.log('发音测评结果:', pronunciationResult)
+    console.log('语法纠错结果:', grammarResult)
     
     // 保存发音测评结果
     if (pronunciationResult) {
       pronunciationResults.value[userMessageIndex] = pronunciationResult
+    }
+    
+    // 保存语法纠错结果
+    if (grammarResult) {
+      grammarResults.value[userMessageIndex] = grammarResult
     }
     
     // 添加AI回复
@@ -1203,6 +1298,115 @@ onBeforeUnmount(() => {
   gap: 6px;
   color: #909399;
   background: #f5f7fa;
+}
+
+/* 语法纠错结果样式 */
+.grammar-result {
+  margin-top: 8px;
+  padding: 12px;
+  background: #fdf6ec;
+  border-radius: 6px;
+  border-left: 3px solid #e6a23c;
+}
+
+.grammar-result-success {
+  background: #f0f9eb;
+  border-left-color: #67c23a;
+}
+
+.grammar-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e6a23c;
+}
+
+.grammar-result-success .grammar-header {
+  color: #67c23a;
+}
+
+.grammar-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.grammar-item {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.grammar-label {
+  color: #606266;
+  font-weight: 600;
+  min-width: 50px;
+}
+
+.grammar-text {
+  color: #303133;
+}
+
+.grammar-text.corrected {
+  color: #67c23a;
+  font-weight: 600;
+}
+
+.grammar-errors {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.grammar-error-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  background: white;
+  border-radius: 4px;
+}
+
+.error-message {
+  font-size: 12px;
+  color: #606266;
+}
+
+.grammar-explanation {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  color: #606266;
+  margin-top: 8px;
+}
+
+.grammar-success {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  background: #f0f9eb;
+  border-radius: 4px;
+  margin-top: 8px;
+}
+
+.success-text {
+  color: #67c23a;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.grammar-evaluation {
+  margin-top: 8px;
+  padding: 8px;
+  background: white;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #606266;
 }
 
 /* 当前识别文本 */
