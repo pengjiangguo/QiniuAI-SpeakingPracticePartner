@@ -59,6 +59,18 @@
               </div>
               <div class="message-text">{{ msg.content }}</div>
               
+              <!-- AI消息播放按钮 -->
+              <div v-if="msg.role === 'assistant'" class="message-actions">
+                <el-button 
+                  size="small" 
+                  :icon="VideoPlay"
+                  @click="playTTS(msg.content)"
+                  text
+                >
+                  播放语音
+                </el-button>
+              </div>
+              
               <!-- 发音测评结果 -->
               <div v-if="msg.role === 'user' && pronunciationResults[index]" class="pronunciation-result">
                 <div class="pronunciation-header">
@@ -211,6 +223,32 @@
                   </el-form-item>
                 </el-col>
               </el-row>
+              <el-row :gutter="16">
+                <el-col :span="12">
+                  <el-form-item label="TTS音色">
+                    <el-select v-model="ttsVoiceType" placeholder="选择音色">
+                      <el-option 
+                        v-for="voice in TTS_VOICES" 
+                        :key="voice.value"
+                        :label="voice.label" 
+                        :value="voice.value"
+                      >
+                        <span>{{ voice.label }}</span>
+                        <span style="color: #8492a6; font-size: 12px; margin-left: 8px;">{{ voice.description }}</span>
+                      </el-option>
+                    </el-select>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                  <el-form-item label="自动播放">
+                    <el-switch 
+                      v-model="autoPlayTTS"
+                      active-text="开启"
+                      inactive-text="关闭"
+                    />
+                  </el-form-item>
+                </el-col>
+              </el-row>
             </el-form>
           </el-collapse-item>
         </el-collapse>
@@ -235,12 +273,14 @@ import {
   Location,
   Briefcase,
   Calendar,
-  TrendCharts
+  TrendCharts,
+  VideoPlay
 } from '@element-plus/icons-vue'
 import AudioCapture from '@/utils/audio'
 import TencentASR from '@/utils/asr'
 import DeepSeekClient from '@/utils/llm'
 import TencentSOE from '@/utils/soe'
+import TencentTTS, { TTS_VOICES } from '@/utils/tts'
 import { buildPrompt, SCENE_PROMPTS } from '@/utils/prompt'
 
 // 场景配置
@@ -259,12 +299,15 @@ const pronunciationResults = ref({}) // 发音测评结果，key为消息索引
 const engineModelType = ref('16k_zh_en')
 const currentScene = ref('daily')
 const englishLevel = ref('B1')
+const ttsVoiceType = ref(0) // TTS音色
+const autoPlayTTS = ref(true) // 自动播放AI回复
 
 // 工具实例
 let audioCapture = null
 let tencentASR = null
 let deepseekClient = null
 let soeClient = null
+let ttsClient = null
 let currentAudioChunks = [] // 当前录音的音频数据
 
 // 当前场景配置
@@ -280,6 +323,21 @@ function initDeepSeekClient() {
     model: 'deepseek-chat',
     temperature: 0.7,
     maxTokens: 500
+  })
+}
+
+// 初始化TTS客户端
+function initTTSClient() {
+  ttsClient = new TencentTTS({
+    secretId: import.meta.env.VITE_TENCENT_SECRET_ID,
+    secretKey: import.meta.env.VITE_TENCENT_SECRET_KEY,
+    appId: import.meta.env.VITE_TENCENT_ASR_APP_ID,
+    voiceType: ttsVoiceType.value,
+    speed: 0,
+    volume: 0,
+    sampleRate: 16000,
+    codec: 'mp3', // 使用mp3格式，避免PCM解码问题
+    enableSubtitle: false
   })
 }
 
@@ -588,6 +646,22 @@ async function sendText() {
     })
     
     scrollToBottom()
+    
+    // 自动播放AI回复语音
+    if (autoPlayTTS.value && aiResponse) {
+      try {
+        // 初始化TTS客户端
+        if (!ttsClient) {
+          initTTSClient()
+        }
+        
+        // 播放语音
+        await ttsClient.speak(aiResponse)
+      } catch (error) {
+        console.error('TTS播放失败:', error)
+        // TTS失败不影响整体流程
+      }
+    }
   } catch (error) {
     console.error('AI响应失败:', error)
     ElMessage.error('AI响应失败，请重试')
@@ -608,6 +682,34 @@ function cleanup() {
   if (tencentASR) {
     tencentASR.end()
     tencentASR = null
+  }
+  
+  if (ttsClient) {
+    ttsClient.destroy()
+    ttsClient = null
+  }
+}
+
+/**
+ * 播放TTS语音
+ */
+async function playTTS(text) {
+  try {
+    // 初始化TTS客户端
+    if (!ttsClient) {
+      initTTSClient()
+    }
+    
+    // 如果正在播放，先停止
+    if (ttsClient.isPlaying) {
+      ttsClient.stop()
+    }
+    
+    // 播放语音
+    await ttsClient.speak(text)
+  } catch (error) {
+    console.error('TTS播放失败:', error)
+    ElMessage.error('语音播放失败')
   }
 }
 
@@ -785,6 +887,12 @@ onBeforeUnmount(() => {
 .message.user .message-text {
   background: linear-gradient(135deg, #409eff 0%, #66b1ff 100%);
   color: white;
+}
+
+.message-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
 }
 
 /* 发音测评结果样式 */
