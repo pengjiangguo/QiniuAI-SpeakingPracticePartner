@@ -12,6 +12,7 @@ target/
 __pycache__/
 *.pyc
 venv/
+logs/
 
 # LanguageTool (本地下载)
 backend/python-project/speaking-practice-partner/tools/LanguageTool-6.6/
