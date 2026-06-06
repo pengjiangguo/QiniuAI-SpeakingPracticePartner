@@ -5,9 +5,6 @@
       <div class="eval-header">
         <h2>发音测评</h2>
         <div class="header-actions">
-          <el-button type="primary" :icon="Refresh" @click="generateNewText">
-            生成新文本
-          </el-button>
           <el-select v-model="difficulty" placeholder="难度选择" style="width: 120px">
             <el-option label="简单" value="easy" />
             <el-option label="中等" value="medium" />
@@ -28,7 +25,7 @@
           </div>
           <div class="text-placeholder" v-else>
             <el-icon :size="40" color="#dcdfe6"><Document /></el-icon>
-            <p>点击"生成新文本"开始练习</p>
+            <p>正在生成文本...</p>
           </div>
           <div class="text-footer" v-if="currentText">
             <el-tag size="small" type="info">难度：{{ difficultyText }}</el-tag>
@@ -57,6 +54,16 @@
               class="record-button"
             >
               {{ recordButtonText }}
+            </el-button>
+            <el-button
+              type="default"
+              size="small"
+              :icon="Refresh"
+              @click="generateNewText"
+              :disabled="isRecording"
+              class="next-button"
+            >
+              下一个
             </el-button>
           </div>
           
@@ -604,12 +611,20 @@ onBeforeUnmount(() => {
 
 .record-button-area {
   margin-bottom: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 12px;
 }
 
 .record-button {
   width: 200px;
   height: 60px;
   font-size: 16px;
+}
+
+.next-button {
+  margin-bottom: 10px;
 }
 
 .record-tip {
