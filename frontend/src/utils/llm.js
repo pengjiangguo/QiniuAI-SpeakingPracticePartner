@@ -37,10 +37,19 @@ class DeepSeekClient {
         temperature: options.temperature || this.temperature,
         max_tokens: options.maxTokens || this.maxTokens,
         stream: false
+      }, {
+        // 支持AbortSignal
+        signal: options.signal
       })
       
       return response.data.choices[0].message.content
     } catch (error) {
+      // 如果是取消错误，直接抛出
+      if (error.name === 'AbortError' || error.code === 'ERR_CANCELED') {
+        console.log('API请求已取消')
+        throw error
+      }
+      
       console.error('DeepSeek API调用失败:', error)
       throw error
     }

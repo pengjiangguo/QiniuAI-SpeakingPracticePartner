@@ -328,6 +328,9 @@ const autoPlayTTS = ref(true) // 自动播放AI回复
 const currentPlayingIndex = ref(-1) // 当前正在播放的消息索引
 const isPaused = ref(false) // 是否暂停
 
+// AbortController用于取消当前对话
+let currentAbortController = null
+
 // TTS音频缓存（避免重复合成）
 const ttsAudioCache = ref({}) // { 消息索引: 音频数据 }
 
@@ -444,6 +447,29 @@ function scrollToBottom() {
  */
 async function startRecording() {
   try {
+    // 如果AI正在思考，停止当前对话
+    if (isAIThinking.value) {
+      console.log('用户开始新对话，停止当前AI生成')
+      
+      // 取消当前的API请求
+      if (currentAbortController) {
+        console.log('取消当前API请求')
+        currentAbortController.abort()
+        currentAbortController = null
+      }
+      
+      // 停止TTS播放
+      if (ttsClient && ttsClient.isPlaying) {
+        console.log('停止当前TTS播放')
+        ttsClient.stop()
+        currentPlayingIndex.value = -1
+        isPaused.value = false
+      }
+      
+      // 重置AI思考状态
+      isAIThinking.value = false
+    }
+    
     isInitializing.value = true
     
     // 初始化DeepSeek客户端
@@ -535,6 +561,10 @@ async function sendText() {
   const textToSend = currentText.value.trim()
   if (!textToSend) return
   
+  // 创建新的AbortController
+  currentAbortController = new AbortController()
+  const abortSignal = currentAbortController.signal
+  
   try {
     isAIThinking.value = true
     
@@ -558,6 +588,11 @@ async function sendText() {
     const [aiResponse, pronunciationResult] = await Promise.all([
       // AI回复
       (async () => {
+        // 检查是否已取消
+        if (abortSignal.aborted) {
+          throw new Error('对话已取消')
+        }
+        
         const systemPrompt = buildPrompt(currentScene.value, englishLevel.value)
         const messages = [
           { role: 'system', content: systemPrompt },
@@ -566,12 +601,17 @@ async function sendText() {
             content: msg.content
           }))
         ]
-        return await deepseekClient.chat(messages)
+        return await deepseekClient.chat(messages, { signal: abortSignal })
       })(),
       
       // 发音测评
       (async () => {
         try {
+          // 检查是否已取消
+          if (abortSignal.aborted) {
+            return null
+          }
+          
           if (currentAudioChunks.length === 0) return null
           
           // 初始化口语评测客户端
@@ -680,10 +720,20 @@ async function sendText() {
       }
     }
   } catch (error) {
+    // 如果是取消错误，不显示错误消息
+    if (error.name === 'AbortError' || error.message === '对话已取消') {
+      console.log('对话已取消')
+      return
+    }
+    
     console.error('AI响应失败:', error)
     ElMessage.error('AI响应失败，请重试')
   } finally {
     isAIThinking.value = false
+    // 清理AbortController
+    if (currentAbortController && !currentAbortController.signal.aborted) {
+      currentAbortController = null
+    }
   }
 }
 
