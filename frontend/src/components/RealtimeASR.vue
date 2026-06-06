@@ -321,7 +321,7 @@ const pronunciationResults = ref({}) // 发音测评结果，key为消息索引
 const engineModelType = ref('16k_en')
 const currentScene = ref('daily')
 const englishLevel = ref('B1')
-const ttsVoiceType = ref(0) // TTS音色
+const ttsVoiceType = ref(TTS_VOICES.find(voice => voice.value === 501009)?.value) // TTS音色
 const autoPlayTTS = ref(true) // 自动播放AI回复
 
 // 播放状态管理
