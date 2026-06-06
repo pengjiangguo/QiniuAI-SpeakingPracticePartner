@@ -328,6 +328,9 @@ const autoPlayTTS = ref(true) // 自动播放AI回复
 const currentPlayingIndex = ref(-1) // 当前正在播放的消息索引
 const isPaused = ref(false) // 是否暂停
 
+// TTS音频缓存（避免重复合成）
+const ttsAudioCache = ref({}) // { 消息索引: 音频数据 }
+
 // 工具实例
 let audioCapture = null
 let tencentASR = null
@@ -640,8 +643,17 @@ async function sendText() {
         currentPlayingIndex.value = aiMessageIndex
         isPaused.value = false
         
+        // 合成音频
+        console.log('自动播放：合成新的音频数据，消息索引:', aiMessageIndex)
+        const audioData = await ttsClient.synthesize(aiResponse)
+        
+        // 保存到缓存（创建副本）
+        const audioDataCopy = new Uint8Array(audioData)
+        ttsAudioCache.value[aiMessageIndex] = audioDataCopy
+        console.log('音频数据已缓存，消息索引:', aiMessageIndex, '大小:', audioDataCopy.length, 'bytes')
+        
         // 播放语音
-        await ttsClient.speak(aiResponse)
+        await ttsClient.playAudioData(audioData)
         
         // 播放完成后重置状态
         currentPlayingIndex.value = -1
@@ -703,8 +715,24 @@ async function playTTS(text, index) {
     currentPlayingIndex.value = index
     isPaused.value = false
     
-    // 播放语音
-    await ttsClient.speak(text)
+    // 检查是否有缓存
+    if (ttsAudioCache.value[index]) {
+      console.log('使用缓存的音频数据，消息索引:', index)
+      // 直接播放缓存的音频
+      await ttsClient.playAudioData(ttsAudioCache.value[index])
+    } else {
+      console.log('合成新的音频数据，消息索引:', index)
+      // 合成新的音频
+      const audioData = await ttsClient.synthesize(text)
+      
+      // 保存到缓存（创建副本）
+      const audioDataCopy = new Uint8Array(audioData)
+      ttsAudioCache.value[index] = audioDataCopy
+      console.log('音频数据已缓存，消息索引:', index, '大小:', audioDataCopy.length, 'bytes')
+      
+      // 播放音频
+      await ttsClient.playAudioData(audioData)
+    }
     
     // 播放完成后重置状态
     currentPlayingIndex.value = -1
@@ -743,9 +771,25 @@ async function resumeTTS() {
     const currentMessage = dialogueHistory.value[currentPlayingIndex.value]
     if (!currentMessage) return
     
-    // 重新播放
+    // 重新播放（使用缓存）
     isPaused.value = false
-    await ttsClient.speak(currentMessage.content)
+    
+    // 检查缓存
+    if (ttsAudioCache.value[currentPlayingIndex.value]) {
+      console.log('使用缓存继续播放，消息索引:', currentPlayingIndex.value)
+      await ttsClient.playAudioData(ttsAudioCache.value[currentPlayingIndex.value])
+    } else {
+      // 没有缓存，重新合成
+      console.log('重新合成音频，消息索引:', currentPlayingIndex.value)
+      const audioData = await ttsClient.synthesize(currentMessage.content)
+      
+      // 保存到缓存（创建副本）
+      const audioDataCopy = new Uint8Array(audioData)
+      ttsAudioCache.value[currentPlayingIndex.value] = audioDataCopy
+      console.log('音频数据已缓存，消息索引:', currentPlayingIndex.value, '大小:', audioDataCopy.length, 'bytes')
+      
+      await ttsClient.playAudioData(audioData)
+    }
     
     // 播放完成后重置状态
     currentPlayingIndex.value = -1
@@ -765,6 +809,15 @@ async function resumeTTS() {
 function clearDialogue() {
   dialogueHistory.value = []
   currentText.value = ''
+  
+  // 清空TTS音频缓存
+  ttsAudioCache.value = {}
+  console.log('TTS音频缓存已清空')
+  
+  // 重置播放状态
+  currentPlayingIndex.value = -1
+  isPaused.value = false
+  
   ElMessage.success('对话已清空')
 }
 
