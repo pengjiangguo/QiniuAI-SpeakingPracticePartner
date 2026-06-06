@@ -58,6 +58,72 @@
                 <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
               </div>
               <div class="message-text">{{ msg.content }}</div>
+              
+              <!-- 发音测评结果 -->
+              <div v-if="msg.role === 'user' && pronunciationResults[index]" class="pronunciation-result">
+                <div class="pronunciation-header">
+                  <el-icon :size="14" color="#e6a23c"><TrendCharts /></el-icon>
+                  <span>发音测评</span>
+                </div>
+                
+                <!-- 综评 -->
+                <div class="pronunciation-overall">
+                  <div class="overall-score">
+                    <div class="score-circle" :style="{ background: getScoreColor(pronunciationResults[index].pronAccuracy) }">
+                      <div class="score-value">{{ Math.round(pronunciationResults[index].pronAccuracy) }}</div>
+                      <div class="score-label">综评</div>
+                    </div>
+                  </div>
+                  <div class="overall-details">
+                    <div class="detail-item">
+                      <span class="detail-label">准确度</span>
+                      <el-progress 
+                        :percentage="pronunciationResults[index].pronAccuracy" 
+                        :color="getScoreColor(pronunciationResults[index].pronAccuracy)"
+                        :stroke-width="6"
+                      />
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-label">流利度</span>
+                      <el-progress 
+                        :percentage="pronunciationResults[index].pronFluency * 100" 
+                        :color="pronunciationResults[index].pronFluency >= 0.9 ? '#67c23a' : pronunciationResults[index].pronFluency >= 0.8 ? '#409eff' : '#e6a23c'"
+                        :stroke-width="6"
+                      />
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-label">完整度</span>
+                      <el-progress 
+                        :percentage="pronunciationResults[index].pronCompletion * 100" 
+                        :color="pronunciationResults[index].pronCompletion >= 1.0 ? '#67c23a' : '#409eff'"
+                        :stroke-width="6"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- 单词评分详情 -->
+                <div v-if="pronunciationResults[index].words && pronunciationResults[index].words.length > 0" class="word-scores">
+                  <div class="word-scores-header">单词评分详情</div>
+                  <div class="word-scores-list">
+                    <span 
+                      v-for="(word, wIndex) in pronunciationResults[index].words" 
+                      :key="wIndex"
+                      class="word-score-item"
+                      :style="{ color: getScoreColor(word.pronAccuracy) }"
+                    >
+                      {{ word.word }}
+                      <el-tag 
+                        :type="getScoreType(word.pronAccuracy)" 
+                        size="small"
+                        effect="plain"
+                      >
+                        {{ Math.round(word.pronAccuracy) }}
+                      </el-tag>
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           
@@ -168,11 +234,13 @@ import {
   ShoppingCart,
   Location,
   Briefcase,
-  Calendar
+  Calendar,
+  TrendCharts
 } from '@element-plus/icons-vue'
 import AudioCapture from '@/utils/audio'
 import TencentASR from '@/utils/asr'
 import DeepSeekClient from '@/utils/llm'
+import TencentSOE from '@/utils/soe'
 import { buildPrompt, SCENE_PROMPTS } from '@/utils/prompt'
 
 // 场景配置
@@ -185,6 +253,7 @@ const isAIThinking = ref(false)
 const currentText = ref('')
 const dialogueHistory = ref([])
 const messagesContainer = ref(null)
+const pronunciationResults = ref({}) // 发音测评结果，key为消息索引
 
 // 配置
 const engineModelType = ref('16k_zh_en')
@@ -195,6 +264,8 @@ const englishLevel = ref('B1')
 let audioCapture = null
 let tencentASR = null
 let deepseekClient = null
+let soeClient = null
+let currentAudioChunks = [] // 当前录音的音频数据
 
 // 当前场景配置
 const currentSceneConfig = computed(() => {
@@ -233,6 +304,26 @@ function formatTime(timestamp) {
   if (!timestamp) return ''
   const date = new Date(timestamp)
   return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
+}
+
+/**
+ * 获取评分类型
+ */
+function getScoreType(score) {
+  if (score >= 90) return 'success'
+  if (score >= 80) return ''
+  if (score >= 70) return 'warning'
+  return 'danger'
+}
+
+/**
+ * 获取评分颜色
+ */
+function getScoreColor(score) {
+  if (score >= 90) return '#67c23a'
+  if (score >= 80) return '#409eff'
+  if (score >= 70) return '#e6a23c'
+  return '#f56c6c'
 }
 
 /**
@@ -320,6 +411,8 @@ async function startRecording() {
       if (tencentASR && tencentASR.isConnected) {
         tencentASR.sendAudio(audioData)
       }
+      // 保存音频数据用于发音测评
+      currentAudioChunks.push(audioData)
     }
     
     // 开始采集
@@ -407,10 +500,12 @@ async function sendText() {
     console.log('发送给AI:', textToSend)
     
     // 添加用户消息
+    const userMessageIndex = dialogueHistory.value.length
     dialogueHistory.value.push({
       role: 'user',
       content: textToSend,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      hasPronunciation: true // 标记有发音测评
     })
     
     // 清空当前文本
@@ -418,30 +513,77 @@ async function sendText() {
     
     scrollToBottom()
     
-    // 构建系统prompt
-    const systemPrompt = buildPrompt(currentScene.value, englishLevel.value)
+    // 并行执行：AI回复 + 发音测评
+    const [aiResponse, pronunciationResult] = await Promise.all([
+      // AI回复
+      (async () => {
+        const systemPrompt = buildPrompt(currentScene.value, englishLevel.value)
+        const messages = [
+          { role: 'system', content: systemPrompt },
+          ...dialogueHistory.value.map(msg => ({
+            role: msg.role,
+            content: msg.content
+          }))
+        ]
+        return await deepseekClient.chat(messages)
+      })(),
+      
+      // 发音测评
+      (async () => {
+        try {
+          if (currentAudioChunks.length === 0) return null
+          
+          // 初始化口语评测客户端
+          soeClient = new TencentSOE({
+            secretId: import.meta.env.VITE_TENCENT_SECRET_ID,
+            secretKey: import.meta.env.VITE_TENCENT_SECRET_KEY,
+            appId: import.meta.env.VITE_TENCENT_ASR_APP_ID
+          })
+          
+          // 连接评测服务
+          await soeClient.connect(textToSend)
+          
+          // 发送音频数据
+          for (const audioData of currentAudioChunks) {
+            soeClient.sendAudio(audioData)
+          }
+          
+          // 结束评测
+          await soeClient.endEvaluation()
+          
+          // 清空音频数据
+          currentAudioChunks = []
+          
+          // 返回结果
+          return new Promise((resolve) => {
+            soeClient.onResult = (result) => {
+              if (result.isFinal) {
+                resolve(result)
+              }
+            }
+            
+            // 超时处理
+            setTimeout(() => resolve(null), 5000)
+          })
+        } catch (error) {
+          console.error('发音测评失败:', error)
+          return null
+        }
+      })()
+    ])
     
-    // 构建消息历史
-    const messages = [
-      {
-        role: 'system',
-        content: systemPrompt
-      },
-      ...dialogueHistory.value.map(msg => ({
-        role: msg.role,
-        content: msg.content
-      }))
-    ]
+    console.log('AI回复:', aiResponse)
+    console.log('发音测评结果:', pronunciationResult)
     
-    // 调用AI
-    const response = await deepseekClient.chat(messages)
-    
-    console.log('AI回复:', response)
+    // 保存发音测评结果
+    if (pronunciationResult) {
+      pronunciationResults.value[userMessageIndex] = pronunciationResult
+    }
     
     // 添加AI回复
     dialogueHistory.value.push({
       role: 'assistant',
-      content: response,
+      content: aiResponse,
       timestamp: Date.now()
     })
     
@@ -643,6 +785,106 @@ onBeforeUnmount(() => {
 .message.user .message-text {
   background: linear-gradient(135deg, #409eff 0%, #66b1ff 100%);
   color: white;
+}
+
+/* 发音测评结果样式 */
+.pronunciation-result {
+  margin-top: 8px;
+  padding: 12px;
+  background: #f5f7fa;
+  border-radius: 6px;
+  border-left: 3px solid #e6a23c;
+}
+
+.pronunciation-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #606266;
+}
+
+/* 综评样式 */
+.pronunciation-overall {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.overall-score {
+  flex-shrink: 0;
+}
+
+.score-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-weight: bold;
+}
+
+.score-value {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.score-label {
+  font-size: 10px;
+  margin-top: 2px;
+}
+
+.overall-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-label {
+  font-size: 12px;
+  color: #606266;
+  width: 50px;
+  flex-shrink: 0;
+}
+
+/* 单词评分详情样式 */
+.word-scores {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed #dcdfe6;
+}
+
+.word-scores-header {
+  font-size: 12px;
+  font-weight: 600;
+  color: #606266;
+  margin-bottom: 8px;
+}
+
+.word-scores-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.word-score-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .thinking {
