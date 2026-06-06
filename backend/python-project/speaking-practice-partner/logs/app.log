@@ -228,3 +228,4 @@
 2026-06-06 23:46:48.584 | INFO     | services.nlp.custom_rules:check:46 - 自定义规则检查完成，发现0个问题
 2026-06-06 23:46:48.584 | INFO     | services.nlp.grammar_corrector:correct:51 - 自定义规则检查完成，发现0个问题
 2026-06-06 23:46:48.584 | INFO     | services.nlp.grammar_corrector:correct:113 - 语法纠错完成，共发现0个错误
+2026-06-07 00:27:11.322 | INFO     | main:shutdown_event:51 - 应用关闭
