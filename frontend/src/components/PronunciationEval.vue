@@ -19,6 +19,9 @@
           <div class="text-header">
             <el-icon :size="20" color="#409eff"><Reading /></el-icon>
             <span>请朗读以下文本</span>
+            <el-icon v-if="isGeneratingText" class="is-loading" :size="16" color="#409eff">
+              <Loading />
+            </el-icon>
           </div>
           <div class="english-text" v-if="currentText">
             {{ currentText }}
@@ -187,7 +190,7 @@
 import { ref, computed, onBeforeUnmount, onMounted } from 'vue'
 import { 
   Refresh, Reading, Document, Microphone, VideoPause, InfoFilled, 
-  TrendCharts, Warning 
+  TrendCharts, Warning, Loading 
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import TencentSOE from '@/utils/soe.js'
@@ -200,6 +203,7 @@ const difficulty = ref('medium')
 const currentText = ref('')
 const isRecording = ref(false)
 const isConnecting = ref(false)
+const isGeneratingText = ref(false) // 是否正在生成文本
 const recordingDuration = ref(0)
 const evalResult = ref(null)
 const lastResult = ref(null) // 最后一次评测结果
@@ -247,7 +251,7 @@ function toggleRecording() {
 // 生成新文本
 async function generateNewText() {
   try {
-    ElMessage.info('正在生成文本...')
+    isGeneratingText.value = true
     
     const prompt = `请生成一个英语${difficultyText.value}难度的句子，用于口语练习。
 要求：
@@ -264,8 +268,6 @@ async function generateNewText() {
     const text = await generateText(prompt)
     currentText.value = text.trim()
     evalResult.value = null
-    
-    ElMessage.success('文本生成成功')
   } catch (error) {
     console.error('生成文本失败:', error)
     ElMessage.error('生成文本失败，请重试')
@@ -277,6 +279,8 @@ async function generateNewText() {
       hard: 'Could you please recommend a good restaurant nearby?'
     }
     currentText.value = backupTexts[difficulty.value]
+  } finally {
+    isGeneratingText.value = false
   }
 }
 
