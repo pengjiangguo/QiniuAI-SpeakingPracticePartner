@@ -240,13 +240,24 @@
                         <el-tag :type="getErrorType(error.error_type)" size="small">
                           {{ error.error_type }}
                         </el-tag>
-                        <span class="error-message">{{ error.message }}</span>
+                        <div class="error-details">
+                          <div class="error-message">{{ error.message }}</div>
+                          <div v-if="error.suggestions && error.suggestions.length > 0" class="error-suggestions">
+                            <span class="suggestion-label">建议：</span>
+                            <span class="suggestion-text">{{ error.suggestions.join('、') }}</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     
                     <div v-if="grammarResults[index].explanation" class="grammar-explanation">
                       <span class="grammar-label">解释：</span>
                       <span class="grammar-text">{{ grammarResults[index].explanation }}</span>
+                    </div>
+                    
+                    <div v-if="grammarResults[index].suggestion" class="grammar-suggestion">
+                      <span class="grammar-label">建议：</span>
+                      <span class="grammar-text">{{ grammarResults[index].suggestion }}</span>
                     </div>
                   </template>
                   
@@ -1367,16 +1378,40 @@ onBeforeUnmount(() => {
 
 .grammar-error-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
-  padding: 6px;
+  padding: 8px;
   background: white;
   border-radius: 4px;
+}
+
+.error-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .error-message {
   font-size: 12px;
   color: #606266;
+}
+
+.error-suggestions {
+  display: flex;
+  gap: 4px;
+  font-size: 12px;
+  color: #909399;
+  margin-top: 4px;
+}
+
+.suggestion-label {
+  color: #606266;
+  font-weight: 500;
+}
+
+.suggestion-text {
+  color: #67c23a;
 }
 
 .grammar-explanation {
@@ -1385,6 +1420,17 @@ onBeforeUnmount(() => {
   font-size: 12px;
   color: #606266;
   margin-top: 8px;
+}
+
+.grammar-suggestion {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  color: #606266;
+  margin-top: 8px;
+  padding: 8px;
+  background: white;
+  border-radius: 4px;
 }
 
 .grammar-success {

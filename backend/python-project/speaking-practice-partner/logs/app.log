@@ -126,3 +126,105 @@
 2026-06-06 22:39:07.863 | INFO     | services.nlp.custom_rules:check:46 - 自定义规则检查完成，发现0个问题
 2026-06-06 22:39:07.863 | INFO     | services.nlp.grammar_corrector:correct:51 - 自定义规则检查完成，发现0个问题
 2026-06-06 22:39:07.863 | INFO     | services.nlp.grammar_corrector:correct:113 - 语法纠错完成，共发现0个错误
+2026-06-06 23:01:08.710 | INFO     | services.nlp.grammar_corrector:correct:39 - 开始语法纠错: I need to send this package to London by express mail
+2026-06-06 23:01:11.534 | INFO     | services.nlp.language_tool_checker:check:294 - LanguageTool检查完成，发现0个错误
+2026-06-06 23:01:11.536 | INFO     | services.nlp.grammar_corrector:correct:43 - LanguageTool检查完成，发现0个错误
+2026-06-06 23:01:12.489 | INFO     | services.nlp.spacy_analyzer:check_expression_naturalness:174 - spaCy表达检查完成，发现0个问题
+2026-06-06 23:01:12.491 | INFO     | services.nlp.grammar_corrector:correct:47 - spaCy分析完成，发现0个问题
+2026-06-06 23:01:12.493 | INFO     | services.nlp.custom_rules:check:46 - 自定义规则检查完成，发现0个问题
+2026-06-06 23:01:12.493 | INFO     | services.nlp.grammar_corrector:correct:51 - 自定义规则检查完成，发现0个问题
+2026-06-06 23:01:12.542 | INFO     | services.nlp.grammar_corrector:correct:113 - 语法纠错完成，共发现0个错误
+2026-06-06 23:11:44.002 | INFO     | services.nlp.grammar_corrector:correct:39 - 开始语法纠错: Could you recommend something for a persistent dry cough
+2026-06-06 23:11:46.424 | INFO     | services.nlp.language_tool_checker:check:294 - LanguageTool检查完成，发现0个错误
+2026-06-06 23:11:46.425 | INFO     | services.nlp.grammar_corrector:correct:43 - LanguageTool检查完成，发现0个错误
+2026-06-06 23:11:46.485 | INFO     | services.nlp.spacy_analyzer:check_expression_naturalness:174 - spaCy表达检查完成，发现0个问题
+2026-06-06 23:11:46.485 | INFO     | services.nlp.grammar_corrector:correct:47 - spaCy分析完成，发现0个问题
+2026-06-06 23:11:46.486 | INFO     | services.nlp.custom_rules:check:46 - 自定义规则检查完成，发现0个问题
+2026-06-06 23:11:46.486 | INFO     | services.nlp.grammar_corrector:correct:51 - 自定义规则检查完成，发现0个问题
+2026-06-06 23:11:46.486 | INFO     | services.nlp.grammar_corrector:correct:113 - 语法纠错完成，共发现0个错误
+2026-06-06 23:11:49.771 | INFO     | services.nlp.grammar_corrector:correct:39 - 开始语法纠错: Could you show me how to use this leg press machine
+2026-06-06 23:11:51.987 | INFO     | services.nlp.language_tool_checker:check:294 - LanguageTool检查完成，发现0个错误
+2026-06-06 23:11:51.988 | INFO     | services.nlp.grammar_corrector:correct:43 - LanguageTool检查完成，发现0个错误
+2026-06-06 23:11:52.010 | INFO     | services.nlp.spacy_analyzer:check_expression_naturalness:174 - spaCy表达检查完成，发现0个问题
+2026-06-06 23:11:52.010 | INFO     | services.nlp.grammar_corrector:correct:47 - spaCy分析完成，发现0个问题
+2026-06-06 23:11:52.010 | INFO     | services.nlp.custom_rules:check:46 - 自定义规则检查完成，发现0个问题
+2026-06-06 23:11:52.010 | INFO     | services.nlp.grammar_corrector:correct:51 - 自定义规则检查完成，发现0个问题
+2026-06-06 23:11:52.012 | INFO     | services.nlp.grammar_corrector:correct:113 - 语法纠错完成，共发现0个错误
+2026-06-06 23:13:37.025 | INFO     | services.nlp.grammar_corrector:correct:39 - 开始语法纠错: Could you help me find a book about ancient Roman history
+2026-06-06 23:13:39.266 | INFO     | services.nlp.language_tool_checker:check:294 - LanguageTool检查完成，发现0个错误
+2026-06-06 23:13:39.266 | INFO     | services.nlp.grammar_corrector:correct:43 - LanguageTool检查完成，发现0个错误
+2026-06-06 23:13:39.292 | INFO     | services.nlp.spacy_analyzer:check_expression_naturalness:174 - spaCy表达检查完成，发现0个问题
+2026-06-06 23:13:39.292 | INFO     | services.nlp.grammar_corrector:correct:47 - spaCy分析完成，发现0个问题
+2026-06-06 23:13:39.294 | INFO     | services.nlp.custom_rules:check:46 - 自定义规则检查完成，发现0个问题
+2026-06-06 23:13:39.294 | INFO     | services.nlp.grammar_corrector:correct:51 - 自定义规则检查完成，发现0个问题
+2026-06-06 23:13:39.294 | INFO     | services.nlp.grammar_corrector:correct:113 - 语法纠错完成，共发现0个错误
+2026-06-06 23:14:27.034 | INFO     | services.nlp.grammar_corrector:correct:39 - 开始语法纠错: I am go to school yesterday.
+2026-06-06 23:14:29.344 | INFO     | services.nlp.language_tool_checker:check:294 - LanguageTool检查完成，发现1个错误
+2026-06-06 23:14:29.344 | INFO     | services.nlp.grammar_corrector:correct:43 - LanguageTool检查完成，发现1个错误
+2026-06-06 23:14:29.365 | INFO     | services.nlp.spacy_analyzer:check_expression_naturalness:174 - spaCy表达检查完成，发现0个问题
+2026-06-06 23:14:29.366 | INFO     | services.nlp.grammar_corrector:correct:47 - spaCy分析完成，发现0个问题
+2026-06-06 23:14:29.368 | INFO     | services.nlp.custom_rules:check:46 - 自定义规则检查完成，发现1个问题
+2026-06-06 23:14:29.368 | INFO     | services.nlp.grammar_corrector:correct:51 - 自定义规则检查完成，发现1个问题
+2026-06-06 23:14:31.446 | INFO     | services.nlp.language_tool_checker:check:294 - LanguageTool检查完成，发现1个错误
+2026-06-06 23:14:31.447 | INFO     | services.nlp.language_tool_checker:correct:334 - LanguageTool纠正完成: I am go to school yesterday. -> I am going to school yesterday.
+2026-06-06 23:14:31.447 | INFO     | services.nlp.grammar_corrector:correct:113 - 语法纠错完成，共发现2个错误
+2026-06-06 23:16:35.367 | INFO     | services.nlp.grammar_corrector:correct:39 - 开始语法纠错: I think we should sit closer to the front row
+2026-06-06 23:16:37.491 | INFO     | services.nlp.language_tool_checker:check:294 - LanguageTool检查完成，发现0个错误
+2026-06-06 23:16:37.491 | INFO     | services.nlp.grammar_corrector:correct:43 - LanguageTool检查完成，发现0个错误
+2026-06-06 23:16:37.526 | INFO     | services.nlp.spacy_analyzer:check_expression_naturalness:174 - spaCy表达检查完成，发现0个问题
+2026-06-06 23:16:37.527 | INFO     | services.nlp.grammar_corrector:correct:47 - spaCy分析完成，发现0个问题
+2026-06-06 23:16:37.527 | INFO     | services.nlp.custom_rules:check:46 - 自定义规则检查完成，发现0个问题
+2026-06-06 23:16:37.529 | INFO     | services.nlp.grammar_corrector:correct:51 - 自定义规则检查完成，发现0个问题
+2026-06-06 23:16:37.529 | INFO     | services.nlp.grammar_corrector:correct:113 - 语法纠错完成，共发现0个错误
+2026-06-06 23:28:32.976 | INFO     | services.nlp.grammar_corrector:correct:39 - 开始语法纠错: do you have this jacket in a smaller size
+2026-06-06 23:28:35.159 | INFO     | services.nlp.language_tool_checker:check:294 - LanguageTool检查完成，发现1个错误
+2026-06-06 23:28:35.161 | INFO     | services.nlp.grammar_corrector:correct:43 - LanguageTool检查完成，发现1个错误
+2026-06-06 23:28:35.195 | INFO     | services.nlp.spacy_analyzer:check_expression_naturalness:174 - spaCy表达检查完成，发现0个问题
+2026-06-06 23:28:35.197 | INFO     | services.nlp.grammar_corrector:correct:47 - spaCy分析完成，发现0个问题
+2026-06-06 23:28:35.197 | INFO     | services.nlp.custom_rules:check:46 - 自定义规则检查完成，发现0个问题
+2026-06-06 23:28:35.198 | INFO     | services.nlp.grammar_corrector:correct:51 - 自定义规则检查完成，发现0个问题
+2026-06-06 23:28:37.302 | INFO     | services.nlp.language_tool_checker:check:294 - LanguageTool检查完成，发现1个错误
+2026-06-06 23:28:37.303 | INFO     | services.nlp.language_tool_checker:correct:334 - LanguageTool纠正完成: do you have this jacket in a smaller size -> Do you have this jacket in a smaller size
+2026-06-06 23:28:37.303 | INFO     | services.nlp.grammar_corrector:correct:113 - 语法纠错完成，共发现1个错误
+2026-06-06 23:30:49.580 | INFO     | services.nlp.grammar_corrector:correct:39 - 开始语法纠错: I am going to school yesterday.
+2026-06-06 23:30:51.683 | INFO     | services.nlp.language_tool_checker:check:294 - LanguageTool检查完成，发现0个错误
+2026-06-06 23:30:51.683 | INFO     | services.nlp.grammar_corrector:correct:43 - LanguageTool检查完成，发现0个错误
+2026-06-06 23:30:51.709 | INFO     | services.nlp.spacy_analyzer:check_expression_naturalness:174 - spaCy表达检查完成，发现0个问题
+2026-06-06 23:30:51.709 | INFO     | services.nlp.grammar_corrector:correct:47 - spaCy分析完成，发现0个问题
+2026-06-06 23:30:51.710 | INFO     | services.nlp.custom_rules:check:46 - 自定义规则检查完成，发现0个问题
+2026-06-06 23:30:51.710 | INFO     | services.nlp.grammar_corrector:correct:51 - 自定义规则检查完成，发现0个问题
+2026-06-06 23:30:51.710 | INFO     | services.nlp.grammar_corrector:correct:113 - 语法纠错完成，共发现0个错误
+2026-06-06 23:30:55.167 | INFO     | services.nlp.grammar_corrector:correct:39 - 开始语法纠错: Your.
+2026-06-06 23:30:57.263 | INFO     | services.nlp.language_tool_checker:check:294 - LanguageTool检查完成，发现0个错误
+2026-06-06 23:30:57.265 | INFO     | services.nlp.grammar_corrector:correct:43 - LanguageTool检查完成，发现0个错误
+2026-06-06 23:30:57.288 | INFO     | services.nlp.spacy_analyzer:check_expression_naturalness:174 - spaCy表达检查完成，发现0个问题
+2026-06-06 23:30:57.288 | INFO     | services.nlp.grammar_corrector:correct:47 - spaCy分析完成，发现0个问题
+2026-06-06 23:30:57.288 | INFO     | services.nlp.custom_rules:check:46 - 自定义规则检查完成，发现0个问题
+2026-06-06 23:30:57.289 | INFO     | services.nlp.grammar_corrector:correct:51 - 自定义规则检查完成，发现0个问题
+2026-06-06 23:30:57.289 | INFO     | services.nlp.grammar_corrector:correct:113 - 语法纠错完成，共发现0个错误
+2026-06-06 23:35:09.152 | INFO     | services.nlp.grammar_corrector:correct:39 - 开始语法纠错: I am going to school yesterday.
+2026-06-06 23:35:11.244 | INFO     | services.nlp.language_tool_checker:check:294 - LanguageTool检查完成，发现0个错误
+2026-06-06 23:35:11.245 | INFO     | services.nlp.grammar_corrector:correct:43 - LanguageTool检查完成，发现0个错误
+2026-06-06 23:35:11.260 | INFO     | services.nlp.spacy_analyzer:check_expression_naturalness:174 - spaCy表达检查完成，发现0个问题
+2026-06-06 23:35:11.261 | INFO     | services.nlp.grammar_corrector:correct:47 - spaCy分析完成，发现0个问题
+2026-06-06 23:35:11.261 | INFO     | services.nlp.custom_rules:check:46 - 自定义规则检查完成，发现0个问题
+2026-06-06 23:35:11.262 | INFO     | services.nlp.grammar_corrector:correct:51 - 自定义规则检查完成，发现0个问题
+2026-06-06 23:35:11.262 | INFO     | services.nlp.grammar_corrector:correct:113 - 语法纠错完成，共发现0个错误
+2026-06-06 23:46:42.079 | INFO     | services.nlp.grammar_corrector:correct:39 - 开始语法纠错: I'm go to school yesterday.
+2026-06-06 23:46:44.299 | INFO     | services.nlp.language_tool_checker:check:294 - LanguageTool检查完成，发现1个错误
+2026-06-06 23:46:44.300 | INFO     | services.nlp.grammar_corrector:correct:43 - LanguageTool检查完成，发现1个错误
+2026-06-06 23:46:44.316 | INFO     | services.nlp.spacy_analyzer:check_expression_naturalness:174 - spaCy表达检查完成，发现0个问题
+2026-06-06 23:46:44.316 | INFO     | services.nlp.grammar_corrector:correct:47 - spaCy分析完成，发现0个问题
+2026-06-06 23:46:44.316 | INFO     | services.nlp.custom_rules:check:46 - 自定义规则检查完成，发现0个问题
+2026-06-06 23:46:44.316 | INFO     | services.nlp.grammar_corrector:correct:51 - 自定义规则检查完成，发现0个问题
+2026-06-06 23:46:46.444 | INFO     | services.nlp.language_tool_checker:check:294 - LanguageTool检查完成，发现1个错误
+2026-06-06 23:46:46.445 | INFO     | services.nlp.language_tool_checker:correct:334 - LanguageTool纠正完成: I'm go to school yesterday. -> I'm going to school yesterday.
+2026-06-06 23:46:46.446 | INFO     | services.nlp.grammar_corrector:correct:113 - 语法纠错完成，共发现1个错误
+2026-06-06 23:46:46.450 | INFO     | services.nlp.grammar_corrector:correct:39 - 开始语法纠错: The.
+2026-06-06 23:46:48.563 | INFO     | services.nlp.language_tool_checker:check:294 - LanguageTool检查完成，发现0个错误
+2026-06-06 23:46:48.564 | INFO     | services.nlp.grammar_corrector:correct:43 - LanguageTool检查完成，发现0个错误
+2026-06-06 23:46:48.582 | INFO     | services.nlp.spacy_analyzer:check_expression_naturalness:174 - spaCy表达检查完成，发现0个问题
+2026-06-06 23:46:48.583 | INFO     | services.nlp.grammar_corrector:correct:47 - spaCy分析完成，发现0个问题
+2026-06-06 23:46:48.584 | INFO     | services.nlp.custom_rules:check:46 - 自定义规则检查完成，发现0个问题
+2026-06-06 23:46:48.584 | INFO     | services.nlp.grammar_corrector:correct:51 - 自定义规则检查完成，发现0个问题
+2026-06-06 23:46:48.584 | INFO     | services.nlp.grammar_corrector:correct:113 - 语法纠错完成，共发现0个错误
