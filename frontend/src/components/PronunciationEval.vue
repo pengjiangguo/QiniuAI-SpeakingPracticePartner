@@ -253,12 +253,40 @@ async function generateNewText() {
   try {
     isGeneratingText.value = true
     
+    // 随机选择场景主题
+    const scenes = [
+      '在餐厅点餐',
+      '在咖啡店',
+      '在酒店前台',
+      '在机场',
+      '在商店购物',
+      '问路',
+      '打电话预约',
+      '在图书馆',
+      '在健身房',
+      '在邮局',
+      '在银行',
+      '在药店',
+      '在电影院',
+      '在博物馆',
+      '在公园'
+    ]
+    
+    const randomScene = scenes[Math.floor(Math.random() * scenes.length)]
+    const timestamp = Date.now()
+    
     const prompt = `请生成一个英语${difficultyText.value}难度的句子，用于口语练习。
+
+场景主题：${randomScene}
+当前时间戳：${timestamp}
+${currentText.value ? `当前文本：${currentText.value}\n要求：生成一个完全不同的新句子，不要与当前文本相似。` : ''}
+
 要求：
 1. 难度：${difficultyText.value}
 2. 句子长度：${difficulty.value === 'easy' ? '5-8个单词' : difficulty.value === 'medium' ? '8-12个单词' : '12-20个单词'}
-3. 内容：日常对话场景
-4. 只返回英文句子，不要其他解释
+3. 内容：${randomScene}场景的对话
+4. 句子要自然、实用、符合日常交流
+5. 只返回英文句子，不要其他解释和标点符号
 
 示例：
 - 简单：Hello, how are you today?
@@ -273,12 +301,21 @@ async function generateNewText() {
     ElMessage.error('生成文本失败，请重试')
     
     // 使用备用文本
-    const backupTexts = {
-      easy: 'Hello, how are you today?',
-      medium: 'I would like to order a cup of coffee, please.',
-      hard: 'Could you please recommend a good restaurant nearby?'
-    }
-    currentText.value = backupTexts[difficulty.value]
+    const backupTexts = [
+      'Hello, how are you today?',
+      'I would like to order a cup of coffee, please.',
+      'Could you please recommend a good restaurant nearby?',
+      'What time does the museum open?',
+      'I need to book a table for two people.',
+      'Excuse me, where is the nearest subway station?',
+      'Can I have the menu, please?',
+      'I would like to make a reservation for tonight.',
+      'How much does this shirt cost?',
+      'Do you have any vegetarian options?'
+    ]
+    
+    // 随机选择备用文本
+    currentText.value = backupTexts[Math.floor(Math.random() * backupTexts.length)]
   } finally {
     isGeneratingText.value = false
   }
