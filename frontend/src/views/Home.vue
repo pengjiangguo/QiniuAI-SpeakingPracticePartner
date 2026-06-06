@@ -105,7 +105,7 @@ const showSettings = ref(false)
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: rgba(0, 0, 0, 0.05);
 }
 
 /* 顶部标题栏 */
