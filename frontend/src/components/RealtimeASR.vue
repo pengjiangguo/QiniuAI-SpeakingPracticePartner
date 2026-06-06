@@ -704,16 +704,23 @@ async function playTTS(text, index) {
       initTTSClient()
     }
     
-    // 如果正在播放其他消息，先停止
-    if (ttsClient.isPlaying && currentPlayingIndex.value !== index) {
+    // 如果正在播放（任何消息），先停止
+    if (ttsClient.isPlaying) {
+      console.log('停止当前播放，准备播放新消息')
       ttsClient.stop()
-      currentPlayingIndex.value = -1
-      isPaused.value = false
+      // 等待一小段时间确保停止完成
+      await new Promise(resolve => setTimeout(resolve, 100))
     }
+    
+    // 重置状态
+    currentPlayingIndex.value = -1
+    isPaused.value = false
     
     // 设置当前播放索引
     currentPlayingIndex.value = index
     isPaused.value = false
+    
+    console.log('开始播放消息，索引:', index)
     
     // 检查是否有缓存
     if (ttsAudioCache.value[index]) {
@@ -737,6 +744,7 @@ async function playTTS(text, index) {
     // 播放完成后重置状态
     currentPlayingIndex.value = -1
     isPaused.value = false
+    console.log('播放完成，消息索引:', index)
     
   } catch (error) {
     console.error('TTS播放失败:', error)
@@ -755,6 +763,8 @@ function pauseTTS() {
       // 停止播放（TTS不支持真正的暂停，只能停止）
       ttsClient.stop()
       isPaused.value = true
+      // 注意：不重置currentPlayingIndex，保持当前消息索引
+      console.log('已暂停播放，消息索引:', currentPlayingIndex.value)
       ElMessage.info('已暂停播放')
     }
   } catch (error) {
