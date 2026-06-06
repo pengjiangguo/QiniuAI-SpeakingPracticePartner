@@ -13,6 +13,9 @@ __pycache__/
 *.pyc
 venv/
 
+# LanguageTool (本地下载)
+backend/python-project/speaking-practice-partner/tools/LanguageTool-6.6/
+
 # ========== 环境与本地配置 ==========
 .env
 .DS_Store

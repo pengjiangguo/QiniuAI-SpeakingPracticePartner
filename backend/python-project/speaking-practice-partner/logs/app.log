@@ -1,3 +1,128 @@
 2026-06-05 17:37:18.933 | INFO     | main:startup_event:43 - Speaking Practice Partner - AI Service v1.0.0 启动中...
 2026-06-05 17:37:18.934 | INFO     | main:startup_event:44 - 服务地址: http://0.0.0.0:8000
 2026-06-05 17:37:18.935 | INFO     | main:startup_event:45 - API文档: http://0.0.0.0:8000/docs
+2026-06-06 22:12:26.870 | INFO     | main:startup_event:43 - Speaking Practice Partner - AI Service v1.0.0 启动中...
+2026-06-06 22:12:26.870 | INFO     | main:startup_event:44 - 服务地址: http://0.0.0.0:8000
+2026-06-06 22:12:26.871 | INFO     | main:startup_event:45 - API文档: http://0.0.0.0:8000/docs
+2026-06-06 22:14:34.211 | INFO     | main:shutdown_event:51 - 应用关闭
+2026-06-06 22:14:47.873 | INFO     | main:startup_event:43 - Speaking Practice Partner - AI Service v1.0.0 启动中...
+2026-06-06 22:14:47.873 | INFO     | main:startup_event:44 - 服务地址: http://0.0.0.0:8000
+2026-06-06 22:14:47.875 | INFO     | main:startup_event:45 - API文档: http://0.0.0.0:8000/docs
+2026-06-06 22:17:37.442 | INFO     | services.nlp.grammar_corrector:correct:39 - 开始语法纠错: I am go to school yesterday.
+2026-06-06 22:17:45.216 | INFO     | services.nlp.language_tool_checker:check:276 - LanguageTool检查完成，发现1个错误
+2026-06-06 22:17:45.216 | INFO     | services.nlp.grammar_corrector:correct:43 - LanguageTool检查完成，发现1个错误
+2026-06-06 22:17:45.633 | INFO     | services.nlp.spacy_analyzer:check_expression_naturalness:174 - spaCy表达检查完成，发现0个问题
+2026-06-06 22:17:45.633 | INFO     | services.nlp.grammar_corrector:correct:47 - spaCy分析完成，发现0个问题
+2026-06-06 22:17:45.636 | INFO     | services.nlp.custom_rules:check:46 - 自定义规则检查完成，发现1个问题
+2026-06-06 22:17:45.637 | INFO     | services.nlp.grammar_corrector:correct:51 - 自定义规则检查完成，发现1个问题
+2026-06-06 22:17:47.849 | INFO     | services.nlp.language_tool_checker:check:276 - LanguageTool检查完成，发现1个错误
+2026-06-06 22:17:47.850 | INFO     | services.nlp.language_tool_checker:correct:316 - LanguageTool纠正完成: I am go to school yesterday. -> I am going to school yesterday.
+2026-06-06 22:17:47.850 | INFO     | services.nlp.grammar_corrector:correct:113 - 语法纠错完成，共发现2个错误
+2026-06-06 22:18:49.993 | INFO     | services.nlp.grammar_corrector:correct:39 - 开始语法纠错: I very like English.
+2026-06-06 22:18:52.084 | INFO     | services.nlp.language_tool_checker:check:276 - LanguageTool检查完成，发现0个错误
+2026-06-06 22:18:52.085 | INFO     | services.nlp.grammar_corrector:correct:43 - LanguageTool检查完成，发现0个错误
+2026-06-06 22:18:52.091 | INFO     | services.nlp.spacy_analyzer:check_expression_naturalness:174 - spaCy表达检查完成，发现0个问题
+2026-06-06 22:18:52.092 | INFO     | services.nlp.grammar_corrector:correct:47 - spaCy分析完成，发现0个问题
+2026-06-06 22:18:52.092 | INFO     | services.nlp.custom_rules:check:46 - 自定义规则检查完成，发现0个问题
+2026-06-06 22:18:52.092 | INFO     | services.nlp.grammar_corrector:correct:51 - 自定义规则检查完成，发现0个问题
+2026-06-06 22:18:52.092 | INFO     | services.nlp.grammar_corrector:correct:113 - 语法纠错完成，共发现0个错误
+2026-06-06 22:19:20.372 | INFO     | services.nlp.grammar_corrector:correct:39 - 开始语法纠错: I'm learning English to improve my speaking skills.
+2026-06-06 22:19:22.455 | INFO     | services.nlp.language_tool_checker:check:276 - LanguageTool检查完成，发现0个错误
+2026-06-06 22:19:22.456 | INFO     | services.nlp.grammar_corrector:correct:43 - LanguageTool检查完成，发现0个错误
+2026-06-06 22:19:22.468 | INFO     | services.nlp.spacy_analyzer:check_expression_naturalness:174 - spaCy表达检查完成，发现0个问题
+2026-06-06 22:19:22.468 | INFO     | services.nlp.grammar_corrector:correct:47 - spaCy分析完成，发现0个问题
+2026-06-06 22:19:22.468 | INFO     | services.nlp.custom_rules:check:46 - 自定义规则检查完成，发现0个问题
+2026-06-06 22:19:22.468 | INFO     | services.nlp.grammar_corrector:correct:51 - 自定义规则检查完成，发现0个问题
+2026-06-06 22:19:22.468 | INFO     | services.nlp.grammar_corrector:correct:113 - 语法纠错完成，共发现0个错误
+2026-06-06 22:20:51.374 | INFO     | services.nlp.grammar_corrector:correct:39 - 开始语法纠错: I very like English.
+2026-06-06 22:20:53.515 | INFO     | services.nlp.language_tool_checker:check:276 - LanguageTool检查完成，发现0个错误
+2026-06-06 22:20:53.516 | INFO     | services.nlp.grammar_corrector:correct:43 - LanguageTool检查完成，发现0个错误
+2026-06-06 22:20:53.531 | INFO     | services.nlp.spacy_analyzer:check_expression_naturalness:174 - spaCy表达检查完成，发现0个问题
+2026-06-06 22:20:53.531 | INFO     | services.nlp.grammar_corrector:correct:47 - spaCy分析完成，发现0个问题
+2026-06-06 22:20:53.531 | INFO     | services.nlp.custom_rules:check:46 - 自定义规则检查完成，发现0个问题
+2026-06-06 22:20:53.532 | INFO     | services.nlp.grammar_corrector:correct:51 - 自定义规则检查完成，发现0个问题
+2026-06-06 22:20:53.532 | INFO     | services.nlp.grammar_corrector:correct:113 - 语法纠错完成，共发现0个错误
+2026-06-06 22:20:56.654 | INFO     | services.nlp.grammar_corrector:correct:39 - 开始语法纠错: I am go to school yesterday.
+2026-06-06 22:20:58.785 | INFO     | services.nlp.language_tool_checker:check:276 - LanguageTool检查完成，发现1个错误
+2026-06-06 22:20:58.786 | INFO     | services.nlp.grammar_corrector:correct:43 - LanguageTool检查完成，发现1个错误
+2026-06-06 22:20:58.804 | INFO     | services.nlp.spacy_analyzer:check_expression_naturalness:174 - spaCy表达检查完成，发现0个问题
+2026-06-06 22:20:58.804 | INFO     | services.nlp.grammar_corrector:correct:47 - spaCy分析完成，发现0个问题
+2026-06-06 22:20:58.804 | INFO     | services.nlp.custom_rules:check:46 - 自定义规则检查完成，发现1个问题
+2026-06-06 22:20:58.805 | INFO     | services.nlp.grammar_corrector:correct:51 - 自定义规则检查完成，发现1个问题
+2026-06-06 22:21:00.982 | INFO     | services.nlp.language_tool_checker:check:276 - LanguageTool检查完成，发现1个错误
+2026-06-06 22:21:00.982 | INFO     | services.nlp.language_tool_checker:correct:316 - LanguageTool纠正完成: I am go to school yesterday. -> I am going to school yesterday.
+2026-06-06 22:21:00.983 | INFO     | services.nlp.grammar_corrector:correct:113 - 语法纠错完成，共发现2个错误
+2026-06-06 22:21:18.490 | INFO     | services.nlp.grammar_corrector:correct:39 - 开始语法纠错: what are you doing now?
+2026-06-06 22:21:20.594 | INFO     | services.nlp.language_tool_checker:check:276 - LanguageTool检查完成，发现1个错误
+2026-06-06 22:21:20.595 | INFO     | services.nlp.grammar_corrector:correct:43 - LanguageTool检查完成，发现1个错误
+2026-06-06 22:21:20.609 | INFO     | services.nlp.spacy_analyzer:check_expression_naturalness:174 - spaCy表达检查完成，发现0个问题
+2026-06-06 22:21:20.609 | INFO     | services.nlp.grammar_corrector:correct:47 - spaCy分析完成，发现0个问题
+2026-06-06 22:21:20.610 | INFO     | services.nlp.custom_rules:check:46 - 自定义规则检查完成，发现0个问题
+2026-06-06 22:21:20.610 | INFO     | services.nlp.grammar_corrector:correct:51 - 自定义规则检查完成，发现0个问题
+2026-06-06 22:21:22.736 | INFO     | services.nlp.language_tool_checker:check:276 - LanguageTool检查完成，发现1个错误
+2026-06-06 22:21:22.738 | INFO     | services.nlp.language_tool_checker:correct:316 - LanguageTool纠正完成: what are you doing now? -> What are you doing now?
+2026-06-06 22:21:22.739 | INFO     | services.nlp.grammar_corrector:correct:113 - 语法纠错完成，共发现1个错误
+2026-06-06 22:21:37.911 | INFO     | services.nlp.grammar_corrector:correct:39 - 开始语法纠错: What are you doing now?
+2026-06-06 22:21:40.035 | INFO     | services.nlp.language_tool_checker:check:276 - LanguageTool检查完成，发现0个错误
+2026-06-06 22:21:40.036 | INFO     | services.nlp.grammar_corrector:correct:43 - LanguageTool检查完成，发现0个错误
+2026-06-06 22:21:40.049 | INFO     | services.nlp.spacy_analyzer:check_expression_naturalness:174 - spaCy表达检查完成，发现0个问题
+2026-06-06 22:21:40.050 | INFO     | services.nlp.grammar_corrector:correct:47 - spaCy分析完成，发现0个问题
+2026-06-06 22:21:40.050 | INFO     | services.nlp.custom_rules:check:46 - 自定义规则检查完成，发现0个问题
+2026-06-06 22:21:40.050 | INFO     | services.nlp.grammar_corrector:correct:51 - 自定义规则检查完成，发现0个问题
+2026-06-06 22:21:40.050 | INFO     | services.nlp.grammar_corrector:correct:113 - 语法纠错完成，共发现0个错误
+2026-06-06 22:21:56.102 | INFO     | services.nlp.grammar_corrector:correct:39 - 开始语法纠错: I very like you.
+2026-06-06 22:21:58.941 | INFO     | services.nlp.language_tool_checker:check:276 - LanguageTool检查完成，发现0个错误
+2026-06-06 22:21:58.943 | INFO     | services.nlp.grammar_corrector:correct:43 - LanguageTool检查完成，发现0个错误
+2026-06-06 22:21:58.971 | INFO     | services.nlp.spacy_analyzer:check_expression_naturalness:174 - spaCy表达检查完成，发现0个问题
+2026-06-06 22:21:58.971 | INFO     | services.nlp.grammar_corrector:correct:47 - spaCy分析完成，发现0个问题
+2026-06-06 22:21:58.975 | INFO     | services.nlp.custom_rules:check:46 - 自定义规则检查完成，发现0个问题
+2026-06-06 22:21:58.975 | INFO     | services.nlp.grammar_corrector:correct:51 - 自定义规则检查完成，发现0个问题
+2026-06-06 22:21:58.975 | INFO     | services.nlp.grammar_corrector:correct:113 - 语法纠错完成，共发现0个错误
+2026-06-06 22:25:33.011 | INFO     | main:shutdown_event:51 - 应用关闭
+2026-06-06 22:29:27.881 | INFO     | main:startup_event:43 - Speaking Practice Partner - AI Service v1.0.0 启动中...
+2026-06-06 22:29:27.881 | INFO     | main:startup_event:44 - 服务地址: http://0.0.0.0:8000
+2026-06-06 22:29:27.881 | INFO     | main:startup_event:45 - API文档: http://0.0.0.0:8000/docs
+2026-06-06 22:29:32.408 | INFO     | services.nlp.grammar_corrector:correct:39 - 开始语法纠错: I very like you.
+2026-06-06 22:29:40.227 | INFO     | services.nlp.language_tool_checker:check:280 - LanguageTool检查完成，发现0个错误
+2026-06-06 22:29:40.229 | INFO     | services.nlp.grammar_corrector:correct:43 - LanguageTool检查完成，发现0个错误
+2026-06-06 22:29:40.240 | INFO     | services.nlp.spacy_analyzer:check_expression_naturalness:174 - spaCy表达检查完成，发现0个问题
+2026-06-06 22:29:40.241 | INFO     | services.nlp.grammar_corrector:correct:47 - spaCy分析完成，发现0个问题
+2026-06-06 22:29:40.243 | INFO     | services.nlp.custom_rules:check:46 - 自定义规则检查完成，发现0个问题
+2026-06-06 22:29:40.244 | INFO     | services.nlp.grammar_corrector:correct:51 - 自定义规则检查完成，发现0个问题
+2026-06-06 22:29:40.244 | INFO     | services.nlp.grammar_corrector:correct:113 - 语法纠错完成，共发现0个错误
+2026-06-06 22:29:48.702 | INFO     | services.nlp.grammar_corrector:correct:39 - 开始语法纠错: I very like you.
+2026-06-06 22:29:50.802 | INFO     | services.nlp.language_tool_checker:check:280 - LanguageTool检查完成，发现0个错误
+2026-06-06 22:29:50.803 | INFO     | services.nlp.grammar_corrector:correct:43 - LanguageTool检查完成，发现0个错误
+2026-06-06 22:29:50.815 | INFO     | services.nlp.spacy_analyzer:check_expression_naturalness:174 - spaCy表达检查完成，发现0个问题
+2026-06-06 22:29:50.815 | INFO     | services.nlp.grammar_corrector:correct:47 - spaCy分析完成，发现0个问题
+2026-06-06 22:29:50.816 | INFO     | services.nlp.custom_rules:check:46 - 自定义规则检查完成，发现0个问题
+2026-06-06 22:29:50.817 | INFO     | services.nlp.grammar_corrector:correct:51 - 自定义规则检查完成，发现0个问题
+2026-06-06 22:29:50.817 | INFO     | services.nlp.grammar_corrector:correct:113 - 语法纠错完成，共发现0个错误
+2026-06-06 22:34:11.033 | INFO     | main:shutdown_event:51 - 应用关闭
+2026-06-06 22:34:26.720 | INFO     | main:startup_event:43 - Speaking Practice Partner - AI Service v1.0.0 启动中...
+2026-06-06 22:34:26.720 | INFO     | main:startup_event:44 - 服务地址: http://0.0.0.0:8000
+2026-06-06 22:34:26.720 | INFO     | main:startup_event:45 - API文档: http://0.0.0.0:8000/docs
+2026-06-06 22:34:26.723 | INFO     | main:shutdown_event:51 - 应用关闭
+2026-06-06 22:34:42.075 | INFO     | main:startup_event:43 - Speaking Practice Partner - AI Service v1.0.0 启动中...
+2026-06-06 22:34:42.075 | INFO     | main:startup_event:44 - 服务地址: http://0.0.0.0:8000
+2026-06-06 22:34:42.075 | INFO     | main:startup_event:45 - API文档: http://0.0.0.0:8000/docs
+2026-06-06 22:38:20.084 | INFO     | main:shutdown_event:51 - 应用关闭
+2026-06-06 22:38:37.044 | INFO     | main:startup_event:43 - Speaking Practice Partner - AI Service v1.0.0 启动中...
+2026-06-06 22:38:37.044 | INFO     | main:startup_event:44 - 服务地址: http://0.0.0.0:8000
+2026-06-06 22:38:37.044 | INFO     | main:startup_event:45 - API文档: http://0.0.0.0:8000/docs
+2026-06-06 22:38:53.376 | INFO     | services.nlp.grammar_corrector:correct:39 - 开始语法纠错: I very like you.
+2026-06-06 22:38:59.888 | INFO     | services.nlp.language_tool_checker:check:294 - LanguageTool检查完成，发现0个错误
+2026-06-06 22:38:59.888 | INFO     | services.nlp.grammar_corrector:correct:43 - LanguageTool检查完成，发现0个错误
+2026-06-06 22:38:59.899 | INFO     | services.nlp.spacy_analyzer:check_expression_naturalness:174 - spaCy表达检查完成，发现0个问题
+2026-06-06 22:38:59.900 | INFO     | services.nlp.grammar_corrector:correct:47 - spaCy分析完成，发现0个问题
+2026-06-06 22:38:59.902 | INFO     | services.nlp.custom_rules:check:46 - 自定义规则检查完成，发现0个问题
+2026-06-06 22:38:59.902 | INFO     | services.nlp.grammar_corrector:correct:51 - 自定义规则检查完成，发现0个问题
+2026-06-06 22:38:59.903 | INFO     | services.nlp.grammar_corrector:correct:113 - 语法纠错完成，共发现0个错误
+2026-06-06 22:39:05.759 | INFO     | services.nlp.grammar_corrector:correct:39 - 开始语法纠错: I very like you.
+2026-06-06 22:39:07.853 | INFO     | services.nlp.language_tool_checker:check:294 - LanguageTool检查完成，发现0个错误
+2026-06-06 22:39:07.854 | INFO     | services.nlp.grammar_corrector:correct:43 - LanguageTool检查完成，发现0个错误
+2026-06-06 22:39:07.862 | INFO     | services.nlp.spacy_analyzer:check_expression_naturalness:174 - spaCy表达检查完成，发现0个问题
+2026-06-06 22:39:07.862 | INFO     | services.nlp.grammar_corrector:correct:47 - spaCy分析完成，发现0个问题
+2026-06-06 22:39:07.863 | INFO     | services.nlp.custom_rules:check:46 - 自定义规则检查完成，发现0个问题
+2026-06-06 22:39:07.863 | INFO     | services.nlp.grammar_corrector:correct:51 - 自定义规则检查完成，发现0个问题
+2026-06-06 22:39:07.863 | INFO     | services.nlp.grammar_corrector:correct:113 - 语法纠错完成，共发现0个错误
