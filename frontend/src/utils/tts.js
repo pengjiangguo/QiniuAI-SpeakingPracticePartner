@@ -81,6 +81,183 @@ class TencentTTS {
   }
   
   /**
+   * 合成语音并返回音频数据（不播放）
+   */
+  async synthesize(text) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        this.audioChunks = []
+        
+        // 构建请求参数
+        const timestamp = Math.floor(Date.now() / 1000)
+        const params = {
+          Action: 'TextToStreamAudioWS',
+          AppId: parseInt(this.appId),
+          Codec: this.codec,
+          EnableSubtitle: this.enableSubtitle ? 1 : 0,
+          ModelType: 1,
+          SampleRate: this.sampleRate,
+          Speed: this.speed,
+          Text: text,
+          Timestamp: timestamp,
+          VoiceType: this.voiceType,
+          Volume: this.volume,
+          Expired: timestamp + 3600,
+          SecretId: this.secretId,
+          Seq: 0,
+          IsEnd: 1
+        }
+        
+        console.log('TTS请求参数:', params)
+        
+        // 生成签名
+        const signature = await this.generateSignature(params)
+        params.Signature = signature
+        
+        // 构建WebSocket URL
+        const queryString = Object.keys(params)
+          .sort()
+          .map(key => `${key}=${encodeURIComponent(params[key])}`)
+          .join('&')
+        
+        const wsUrl = `wss://tts.cloud.tencent.com/stream_ws?${queryString}`
+        console.log('TTS WebSocket URL:', wsUrl)
+        
+        // 创建WebSocket连接
+        this.ws = new WebSocket(wsUrl)
+        this.ws.binaryType = 'arraybuffer'
+        
+        this.ws.onopen = () => {
+          console.log('TTS WebSocket连接已建立')
+        }
+        
+        this.ws.onmessage = async (event) => {
+          // 检查数据类型
+          console.log('TTS消息类型:', typeof event.data, '是否ArrayBuffer:', event.data instanceof ArrayBuffer, '是否Blob:', event.data instanceof Blob)
+          
+          if (event.data instanceof ArrayBuffer) {
+            // 音频数据
+            this.audioChunks.push(new Uint8Array(event.data))
+            console.log('接收到音频数据（ArrayBuffer），大小:', event.data.byteLength, 'bytes')
+          } else if (event.data instanceof Blob) {
+            // Blob格式
+            const arrayBuffer = await event.data.arrayBuffer()
+            this.audioChunks.push(new Uint8Array(arrayBuffer))
+            console.log('接收到音频数据（Blob），大小:', arrayBuffer.byteLength, 'bytes')
+          } else {
+            // 文本消息
+            try {
+              const result = JSON.parse(event.data)
+              console.log('TTS文本消息:', result)
+              
+              if (result.code !== 0) {
+                console.error('TTS错误:', result)
+                reject(new Error(result.message || 'TTS合成失败'))
+                return
+              }
+              
+              // 检查是否结束
+              if (result.final === 1) {
+                console.log('TTS合成结束，音频片段数:', this.audioChunks.length)
+                this.ws.close()
+                
+                // 返回合并的音频数据
+                const totalLength = this.audioChunks.reduce((acc, chunk) => acc + chunk.length, 0)
+                const audioData = new Uint8Array(totalLength)
+                
+                let offset = 0
+                for (const chunk of this.audioChunks) {
+                  audioData.set(chunk, offset)
+                  offset += chunk.length
+                }
+                
+                console.log('返回音频数据，总大小:', audioData.length, 'bytes')
+                
+                // 创建一个新的副本，避免ArrayBuffer被分离
+                const audioDataCopy = new Uint8Array(audioData)
+                resolve(audioDataCopy)
+              }
+            } catch (error) {
+              console.error('解析TTS消息失败:', error)
+            }
+          }
+        }
+        
+        this.ws.onerror = (error) => {
+          console.error('WebSocket错误:', error)
+          reject(error)
+        }
+        
+      } catch (error) {
+        console.error('TTS合成失败:', error)
+        reject(error)
+      }
+    })
+  }
+  
+  /**
+   * 播放音频数据
+   */
+  async playAudioData(audioData) {
+    try {
+      console.log('播放音频数据，大小:', audioData.length, 'bytes, 格式:', this.codec)
+      
+      // 检查音频数据是否有效
+      if (!audioData || audioData.length === 0) {
+        throw new Error('音频数据为空')
+      }
+      
+      // 创建音频上下文
+      if (!this.audioContext) {
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)({
+          sampleRate: this.sampleRate
+        })
+      }
+      
+      console.log('AudioContext采样率:', this.audioContext.sampleRate)
+      
+      // 根据音频格式解码
+      let audioBuffer
+      
+      if (this.codec === 'mp3') {
+        // MP3格式，使用浏览器自动解码
+        // 创建一个新的ArrayBuffer副本，避免detached buffer问题
+        const arrayBuffer = new ArrayBuffer(audioData.length)
+        const view = new Uint8Array(arrayBuffer)
+        view.set(audioData)
+        
+        console.log('创建ArrayBuffer副本，大小:', arrayBuffer.byteLength, 'bytes')
+        audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer)
+      } else {
+        // PCM格式，手动解码
+        audioBuffer = this.decodePCM(audioData)
+      }
+      
+      console.log('AudioBuffer时长:', audioBuffer.duration, '秒')
+      
+      // 创建音频源
+      this.currentSource = this.audioContext.createBufferSource()
+      this.currentSource.buffer = audioBuffer
+      this.currentSource.connect(this.audioContext.destination)
+      
+      // 播放
+      this.isPlaying = true
+      this.currentSource.start(0)
+      
+      // 播放结束
+      this.currentSource.onended = () => {
+        this.isPlaying = false
+        console.log('音频播放结束')
+      }
+      
+    } catch (error) {
+      console.error('播放音频失败:', error)
+      this.isPlaying = false
+      throw error
+    }
+  }
+  
+  /**
    * 合成并播放语音
    * @param {String} text - 要合成的文本
    */
