@@ -192,10 +192,9 @@ class TencentSOE {
   /**
    * 解析评测结果
    */
-  parseResult(resultStr) {
+  parseResult(resultData) {
     try {
-      // 结果是Go语言结构体的字符串表示，需要解析
-      // 示例：{SuggestedScore:-0.36 PronAccuracy:-1 PronFluency:-1 PronCompletion:0.2 Words:[...]}
+      console.log('解析评测结果数据:', resultData)
       
       const result = {
         suggestedScore: 0,
@@ -205,43 +204,65 @@ class TencentSOE {
         words: []
       }
       
-      // 提取SuggestedScore
-      const suggestedScoreMatch = resultStr.match(/SuggestedScore:([-\d.]+)/)
-      if (suggestedScoreMatch) {
-        result.suggestedScore = parseFloat(suggestedScoreMatch[1])
+      // 如果是字符串，尝试解析
+      if (typeof resultData === 'string') {
+        const resultStr = resultData
+        
+        // 提取SuggestedScore
+        const suggestedScoreMatch = resultStr.match(/SuggestedScore:([-\d.]+)/)
+        if (suggestedScoreMatch) {
+          result.suggestedScore = parseFloat(suggestedScoreMatch[1])
+        }
+        
+        // 提取PronAccuracy
+        const pronAccuracyMatch = resultStr.match(/PronAccuracy:([-\d.]+)/)
+        if (pronAccuracyMatch) {
+          result.pronAccuracy = parseFloat(pronAccuracyMatch[1])
+        }
+        
+        // 提取PronFluency
+        const pronFluencyMatch = resultStr.match(/PronFluency:([-\d.]+)/)
+        if (pronFluencyMatch) {
+          result.pronFluency = parseFloat(pronFluencyMatch[1])
+        }
+        
+        // 提取PronCompletion
+        const pronCompletionMatch = resultStr.match(/PronCompletion:([-\d.]+)/)
+        if (pronCompletionMatch) {
+          result.pronCompletion = parseFloat(pronCompletionMatch[1])
+        }
+        
+        // 提取Words（简化处理，只提取单词和准确度）
+        const wordsMatch = resultStr.match(/Words:\[(.*?)\]/)
+        if (wordsMatch) {
+          const wordsStr = wordsMatch[1]
+          // 使用正则提取每个单词的信息
+          const wordPattern = /{Mbtm:\d+ Metm:\d+ PronAccuracy:([-\d.]+) PronFluency:([-\d.]+) ReferenceWord: Word:([^ ]+) Tag:\d+ KeywordTag:\d+ PhoneInfo:\[\] Tone:\{Valid:false RefTone:-1 HypTone:-1\}}/g
+          let match
+          while ((match = wordPattern.exec(wordsStr)) !== null) {
+            result.words.push({
+              word: match[3],
+              pronAccuracy: parseFloat(match[1]),
+              pronFluency: parseFloat(match[2])
+            })
+          }
+        }
       }
-      
-      // 提取PronAccuracy
-      const pronAccuracyMatch = resultStr.match(/PronAccuracy:([-\d.]+)/)
-      if (pronAccuracyMatch) {
-        result.pronAccuracy = parseFloat(pronAccuracyMatch[1])
-      }
-      
-      // 提取PronFluency
-      const pronFluencyMatch = resultStr.match(/PronFluency:([-\d.]+)/)
-      if (pronFluencyMatch) {
-        result.pronFluency = parseFloat(pronFluencyMatch[1])
-      }
-      
-      // 提取PronCompletion
-      const pronCompletionMatch = resultStr.match(/PronCompletion:([-\d.]+)/)
-      if (pronCompletionMatch) {
-        result.pronCompletion = parseFloat(pronCompletionMatch[1])
-      }
-      
-      // 提取Words（简化处理，只提取单词和准确度）
-      const wordsMatch = resultStr.match(/Words:\[(.*?)\]/)
-      if (wordsMatch) {
-        const wordsStr = wordsMatch[1]
-        // 使用正则提取每个单词的信息
-        const wordPattern = /{Mbtm:\d+ Metm:\d+ PronAccuracy:([-\d.]+) PronFluency:([-\d.]+) ReferenceWord: Word:([^ ]+) Tag:\d+ KeywordTag:\d+ PhoneInfo:\[\] Tone:\{Valid:false RefTone:-1 HypTone:-1\}}/g
-        let match
-        while ((match = wordPattern.exec(wordsStr)) !== null) {
-          result.words.push({
-            word: match[3],
-            pronAccuracy: parseFloat(match[1]),
-            pronFluency: parseFloat(match[2])
-          })
+      // 如果是对象，直接提取字段
+      else if (typeof resultData === 'object' && resultData !== null) {
+        // 提取评分
+        result.suggestedScore = resultData.SuggestedScore || 0
+        result.pronAccuracy = resultData.PronAccuracy || 0
+        result.pronFluency = resultData.PronFluency || 0
+        result.pronCompletion = resultData.PronCompletion || 0
+        
+        // 提取单词评分
+        if (resultData.Words && Array.isArray(resultData.Words)) {
+          result.words = resultData.Words.map(word => ({
+            word: word.Word || '',
+            pronAccuracy: word.PronAccuracy || 0,
+            pronFluency: word.PronFluency || 0
+          }))
         }
       }
       
