@@ -4,6 +4,7 @@
 from pydantic import BaseModel
 from typing import List, Dict, Optional
 from datetime import datetime
+from enum import Enum
 
 
 # ==================== 发音评测相关 ====================
@@ -62,6 +63,46 @@ class ChinglishDetectRequest(BaseModel):
 class ChinglishDetectResponse(BaseModel):
     """中式英语检测响应"""
     results: List[Dict]
+
+
+# ==================== 语法纠错相关（新增） ====================
+
+class ErrorType(str, Enum):
+    """错误类型枚举"""
+    GRAMMAR = "语法错误"
+    EXPRESSION = "表达不自然"
+    WORD_CHOICE = "用词不当"
+    TENSE = "时态错误"
+    SPELLING = "拼写错误"
+    OTHER = "其他"
+
+
+class GrammarError(BaseModel):
+    """语法错误详情"""
+    error_type: ErrorType
+    message: str
+    short_message: str
+    suggestions: List[str]
+    rule_id: str
+    offset: int
+    length: int
+
+
+class CorrectionRequest(BaseModel):
+    """语法纠错请求"""
+    text: str
+    detailed: bool = True
+
+
+class CorrectionResult(BaseModel):
+    """语法纠错结果"""
+    has_error: bool
+    original_sentence: str
+    corrected_sentence: Optional[str] = None
+    errors: List[GrammarError] = []
+    explanation: Optional[str] = None
+    suggestion: Optional[str] = None
+    evaluation: Optional[str] = None
 
 
 # ==================== 数据分析相关 ====================
