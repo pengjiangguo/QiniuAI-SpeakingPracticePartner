@@ -761,6 +761,9 @@ async function sendText() {
       timestamp: Date.now()
     })
     
+    // AI回复已添加，立即停止显示"正在思考..."
+    isAIThinking.value = false
+    
     scrollToBottom()
     
     // 自动播放AI回复语音
