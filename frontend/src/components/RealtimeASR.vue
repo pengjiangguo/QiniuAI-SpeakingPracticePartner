@@ -477,12 +477,7 @@ async function startRecording() {
     isRecording.value = true
     isInitializing.value = false
     
-    // 如果是第一次，发送初始问候
-    if (dialogueHistory.value.length === 0) {
-      await sendInitialGreeting()
-    }
-    
-    ElMessage.success('开始语音对话')
+    ElMessage.success('开始语音对话，请说话...')
   } catch (error) {
     console.error('启动识别失败:', error)
     ElMessage.error(`启动失败: ${error.message || '未知错误'}`)
@@ -500,47 +495,6 @@ function stopRecording() {
   cleanup()
   isRecording.value = false
   ElMessage.info('停止语音对话')
-}
-
-/**
- * 发送初始问候
- */
-async function sendInitialGreeting() {
-  try {
-    isAIThinking.value = true
-    
-    // 构建系统prompt
-    const systemPrompt = buildPrompt(currentScene.value, englishLevel.value)
-    
-    // 构建消息
-    const messages = [
-      {
-        role: 'system',
-        content: systemPrompt
-      },
-      {
-        role: 'user',
-        content: '开始对话'
-      }
-    ]
-    
-    // 调用AI
-    const response = await deepseekClient.chat(messages)
-    
-    // 添加到对话历史
-    dialogueHistory.value.push({
-      role: 'assistant',
-      content: response,
-      timestamp: Date.now()
-    })
-    
-    scrollToBottom()
-  } catch (error) {
-    console.error('AI响应失败:', error)
-    ElMessage.error('AI响应失败，请检查DeepSeek配置')
-  } finally {
-    isAIThinking.value = false
-  }
 }
 
 /**
