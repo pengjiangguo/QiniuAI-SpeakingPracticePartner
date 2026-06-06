@@ -207,7 +207,7 @@ let autoStopTimer = null // 自动结束定时器
 let soeClient = null
 
 // 自动结束配置
-const AUTO_STOP_DELAY = 3 // 完整度达到100%后等待3秒自动结束
+const AUTO_STOP_DELAY = 1 // 完整度达到100%后等待1秒自动结束
 const MIN_RECORDING_TIME = 2 // 最少录音时间2秒
 
 // 难度文本
@@ -322,7 +322,7 @@ async function startRecording() {
       if (hasReadAllWords && hasMinTime) {
         // 已读完所有单词，开始倒计时自动结束
         if (autoStopCountdown.value === 0) {
-          ElMessage.success(`已读完所有单词（${recognizedWords}/${totalWords}）！3秒后自动结束`)
+          ElMessage.success(`已读完所有单词（${recognizedWords}/${totalWords}）！1秒后自动结束`)
           startAutoStopCountdown()
         }
       }
