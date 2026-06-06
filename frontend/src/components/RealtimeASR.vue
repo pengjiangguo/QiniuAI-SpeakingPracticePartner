@@ -870,6 +870,9 @@ async function sendText() {
  * 清理资源
  */
 function cleanup() {
+  // 清空当前识别文本
+  currentText.value = ''
+  
   if (audioCapture) {
     audioCapture.destroy()
     audioCapture = null
