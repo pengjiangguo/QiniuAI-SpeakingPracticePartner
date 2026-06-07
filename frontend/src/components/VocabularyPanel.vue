@@ -360,6 +360,17 @@ async function loadStatistics() {
   }
 }
 
+// 刷新所有数据
+function refresh() {
+  loadVocabularies()
+  loadStatistics()
+}
+
+// 暴露刷新方法给父组件
+defineExpose({
+  refresh
+})
+
 // 添加单词
 async function addWord() {
   if (!wordForm.value.word || !wordForm.value.meaningCn) {

@@ -46,17 +46,17 @@
 
       <!-- 词汇学习 -->
       <div v-show="currentTab === 'vocabulary'" class="content-panel">
-        <VocabularyPanel />
+        <VocabularyPanel ref="vocabularyRef" />
       </div>
 
       <!-- 学习统计 -->
       <div v-show="currentTab === 'statistics'" class="content-panel">
-        <StatisticsPanel />
+        <StatisticsPanel ref="statisticsRef" />
       </div>
 
       <!-- 对话历史 -->
       <div v-show="currentTab === 'history'" class="content-panel">
-        <HistoryPanel />
+        <HistoryPanel ref="historyRef" />
       </div>
     </div>
 
@@ -73,7 +73,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
   ChatDotRound,
@@ -119,11 +119,37 @@ const functionTabs = [
 // 设置抽屉
 const showSettings = ref(false)
 
+// 子组件引用
+const vocabularyRef = ref(null)
+const statisticsRef = ref(null)
+const historyRef = ref(null)
+
 // 页面加载时检查 URL 参数
 onMounted(() => {
   const tab = route.query.tab
   if (tab && functionTabs.some(t => t.key === tab)) {
     currentTab.value = tab
+  }
+})
+
+// 监听标签切换，刷新对应组件数据
+watch(currentTab, (newTab, oldTab) => {
+  // 只有从其他标签切换过来时才刷新
+  if (oldTab !== newTab) {
+    // 使用 nextTick 确保组件已经显示
+    setTimeout(() => {
+      switch (newTab) {
+        case 'vocabulary':
+          vocabularyRef.value?.refresh()
+          break
+        case 'statistics':
+          statisticsRef.value?.refresh()
+          break
+        case 'history':
+          historyRef.value?.refresh()
+          break
+      }
+    }, 100)
   }
 })
 </script>

@@ -316,6 +316,16 @@ function getScoreType(score) {
   if (score >= 70) return 'warning'
   return 'danger'
 }
+
+// 刷新所有数据
+function refresh() {
+  loadHistoryList()
+}
+
+// 暴露刷新方法给父组件
+defineExpose({
+  refresh
+})
 </script>
 
 <style scoped>
