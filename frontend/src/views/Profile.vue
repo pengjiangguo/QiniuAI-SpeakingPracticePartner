@@ -76,6 +76,14 @@
         <el-icon :size="16"><ArrowRight /></el-icon>
       </div>
 
+      <div class="menu-item" @click="handleMenuClick('password')">
+        <div class="menu-left">
+          <el-icon :size="20"><Lock /></el-icon>
+          <span>修改密码</span>
+        </div>
+        <el-icon :size="16"><ArrowRight /></el-icon>
+      </div>
+
       <div class="menu-item logout" @click="handleLogout">
         <div class="menu-left">
           <el-icon :size="20"><SwitchButton /></el-icon>
@@ -129,6 +137,45 @@
         <el-button type="primary" @click="handleSaveProfile" :loading="saving">保存</el-button>
       </template>
     </el-dialog>
+
+    <!-- 修改密码对话框 -->
+    <el-dialog
+      v-model="passwordDialogVisible"
+      title="修改密码"
+      width="500px"
+      :close-on-click-modal="false"
+    >
+      <el-form :model="passwordForm" label-width="100px">
+        <el-form-item label="原密码">
+          <el-input
+            v-model="passwordForm.oldPassword"
+            type="password"
+            placeholder="请输入原密码"
+            show-password
+          />
+        </el-form-item>
+        <el-form-item label="新密码">
+          <el-input
+            v-model="passwordForm.newPassword"
+            type="password"
+            placeholder="请输入新密码"
+            show-password
+          />
+        </el-form-item>
+        <el-form-item label="确认密码">
+          <el-input
+            v-model="passwordForm.confirmPassword"
+            type="password"
+            placeholder="请再次输入新密码"
+            show-password
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="passwordDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleSavePassword" :loading="savingPassword">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -141,11 +188,12 @@ import {
   User,
   UserFilled,
   SwitchButton,
-  ArrowRight
+  ArrowRight,
+  Lock
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { getStatisticsOverview } from '@/api/statistics'
-import { updateUserInfo } from '@/api/user'
+import { updateUserInfo, resetPassword } from '@/api/user'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -168,6 +216,15 @@ const editForm = ref({
   nativeLanguage: '',
   englishLevel: '',
   learningGoal: ''
+})
+
+// 密码重置对话框
+const passwordDialogVisible = ref(false)
+const savingPassword = ref(false)
+const passwordForm = ref({
+  oldPassword: '',
+  newPassword: '',
+  confirmPassword: ''
 })
 
 // 语言映射
@@ -209,6 +266,9 @@ const handleMenuClick = (type) => {
     case 'profile':
       handleEditProfile()
       break
+    case 'password':
+      handleEditPassword()
+      break
   }
 }
 
@@ -221,6 +281,16 @@ const handleEditProfile = () => {
     learningGoal: userStore.userInfo?.learningGoal || ''
   }
   editDialogVisible.value = true
+}
+
+// 编辑密码
+const handleEditPassword = () => {
+  passwordForm.value = {
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  }
+  passwordDialogVisible.value = true
 }
 
 // 保存个人资料
@@ -240,6 +310,44 @@ const handleSaveProfile = async () => {
     ElMessage.error(error.message || '保存失败')
   } finally {
     saving.value = false
+  }
+}
+
+// 保存密码
+const handleSavePassword = async () => {
+  try {
+    // 验证密码
+    if (!passwordForm.value.oldPassword) {
+      ElMessage.warning('请输入原密码')
+      return
+    }
+    if (!passwordForm.value.newPassword) {
+      ElMessage.warning('请输入新密码')
+      return
+    }
+    if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
+      ElMessage.warning('两次输入的密码不一致')
+      return
+    }
+    if (passwordForm.value.newPassword.length < 6) {
+      ElMessage.warning('密码长度不能少于6位')
+      return
+    }
+
+    savingPassword.value = true
+    
+    await resetPassword({
+      oldPassword: passwordForm.value.oldPassword,
+      newPassword: passwordForm.value.newPassword
+    })
+    
+    ElMessage.success('密码修改成功')
+    passwordDialogVisible.value = false
+  } catch (error) {
+    console.error('修改密码失败:', error)
+    ElMessage.error(error.message || '修改失败')
+  } finally {
+    savingPassword.value = false
   }
 }
 
