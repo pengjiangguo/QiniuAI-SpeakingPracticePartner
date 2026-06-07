@@ -14,61 +14,60 @@
           />
           <el-select v-model="filterScene" placeholder="场景筛选" clearable style="width: 150px">
             <el-option label="全部场景" value="" />
-            <el-option label="日常对话" value="日常对话" />
-            <el-option label="餐厅点餐" value="餐厅点餐" />
-            <el-option label="购物" value="购物" />
-            <el-option label="旅行" value="旅行" />
-            <el-option label="面试" value="面试" />
-            <el-option label="会议" value="会议" />
+            <el-option label="日常对话" value="daily" />
+            <el-option label="餐厅点餐" value="restaurant" />
+            <el-option label="购物" value="shopping" />
+            <el-option label="旅行" value="travel" />
+            <el-option label="面试" value="interview" />
+            <el-option label="会议" value="meeting" />
           </el-select>
         </div>
       </div>
 
       <!-- 历史列表 -->
-      <div class="history-list">
+      <div class="history-list" v-loading="loading">
         <div 
-          v-for="record in filteredHistory" 
+          v-for="record in historyList" 
           :key="record.id"
           class="history-item"
           @click="viewDetail(record)"
         >
           <div class="item-header">
             <div class="item-info">
-              <el-tag :color="getSceneColor(record.scene)" effect="dark" size="small">
-                {{ record.scene }}
+              <el-tag :color="getSceneColor(record.sceneId)" effect="dark" size="small">
+                {{ getSceneName(record.sceneId) }}
               </el-tag>
-              <span class="item-date">{{ record.date }} {{ record.time }}</span>
+              <span class="item-date">{{ formatDate(record.startTime) }}</span>
             </div>
             <div class="item-stats">
               <span class="stat-item">
                 <el-icon><Clock /></el-icon>
-                {{ record.duration }}
+                {{ formatDuration(record.durationSeconds) }}
               </span>
               <span class="stat-item">
                 <el-icon><ChatDotRound /></el-icon>
-                {{ record.messages }}条消息
+                {{ record.messageCount || 0 }}条消息
               </span>
             </div>
           </div>
           <div class="item-preview">
-            {{ record.preview }}
+            {{ record.title || '对话记录' }}
           </div>
           <div class="item-footer">
             <div class="item-tags">
               <el-tag 
-                v-for="tag in record.tags" 
-                :key="tag"
+                v-if="record.overallScore" 
                 size="small"
-                type="info"
+                :type="getScoreType(record.overallScore)"
                 style="margin-right: 6px"
               >
-                {{ tag }}
+                评分: {{ record.overallScore }}
               </el-tag>
             </div>
             <div class="item-actions">
-              <el-button size="small" text :icon="View">查看</el-button>
-              <el-button size="small" text :icon="Download">导出</el-button>
-              <el-button size="small" text type="danger" :icon="Delete">删除</el-button>
+              <el-button size="small" text :icon="View" @click.stop="viewDetail(record)">查看</el-button>
+              <el-button size="small" text :icon="Download" @click.stop="exportSession(record)">导出</el-button>
+              <el-button size="small" text type="danger" :icon="Delete" @click.stop="deleteSession(record)">删除</el-button>
             </div>
           </div>
         </div>
@@ -82,51 +81,53 @@
           :page-sizes="[10, 20, 30, 50]"
           :total="totalRecords"
           layout="total, sizes, prev, pager, next, jumper"
+          @current-change="loadHistoryList"
+          @size-change="loadHistoryList"
         />
       </div>
     </div>
 
     <!-- 详情对话框 -->
-    <el-dialog v-model="showDetailDialog" :title="currentRecord?.scene" width="800px">
-      <div v-if="currentRecord" class="dialogue-detail">
+    <el-dialog v-model="showDetailDialog" :title="getSceneName(currentRecord?.sceneId)" width="800px">
+      <div v-if="currentRecord" class="dialogue-detail" v-loading="detailLoading">
         <div class="detail-header">
-          <p><strong>日期：</strong>{{ currentRecord.date }} {{ currentRecord.time }}</p>
-          <p><strong>时长：</strong>{{ currentRecord.duration }}</p>
-          <p><strong>消息数：</strong>{{ currentRecord.messages }}条</p>
+          <p><strong>日期：</strong>{{ formatDate(currentRecord.startTime) }}</p>
+          <p><strong>时长：</strong>{{ formatDuration(currentRecord.durationSeconds) }}</p>
+          <p><strong>消息数：</strong>{{ currentRecord.messageCount || 0 }}条</p>
+          <p v-if="currentRecord.overallScore"><strong>评分：</strong>{{ currentRecord.overallScore }}</p>
         </div>
         <el-divider />
         <div class="detail-messages">
-          <div class="message-item user">
-            <div class="message-role">我</div>
-            <div class="message-text">Hello, how are you today?</div>
-          </div>
-          <div class="message-item assistant">
-            <div class="message-role">AI</div>
-            <div class="message-text">I'm doing great, thank you for asking! How about you?</div>
-          </div>
-          <div class="message-item user">
-            <div class="message-role">我</div>
-            <div class="message-text">I'm fine too. What's the weather like today?</div>
-          </div>
-          <div class="message-item assistant">
-            <div class="message-role">AI</div>
-            <div class="message-text">It's a beautiful sunny day! Perfect for outdoor activities.</div>
+          <div 
+            v-for="message in messagesList" 
+            :key="message.id"
+            :class="['message-item', message.role]"
+          >
+            <div class="message-role">{{ message.role === 'user' ? '我' : 'AI' }}</div>
+            <div class="message-text">{{ message.content }}</div>
           </div>
         </div>
       </div>
       <template #footer>
         <el-button @click="showDetailDialog = false">关闭</el-button>
-        <el-button type="primary" :icon="Download">导出对话</el-button>
+        <el-button type="primary" :icon="Download" @click="exportSession(currentRecord)">导出对话</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { 
   Search, Clock, ChatDotRound, View, Download, Delete 
 } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import {
+  getHistoryList,
+  getSessionDetail,
+  getSessionMessages,
+  deleteSession as deleteSessionApi
+} from '@/api/history'
 
 // 搜索文本
 const searchText = ref('')
@@ -135,101 +136,163 @@ const filterScene = ref('')
 // 分页
 const currentPage = ref(1)
 const pageSize = ref(10)
-const totalRecords = ref(45)
+const totalRecords = ref(0)
+
+// 加载状态
+const loading = ref(false)
+const detailLoading = ref(false)
 
 // 显示详情对话框
 const showDetailDialog = ref(false)
 const currentRecord = ref(null)
+const messagesList = ref([])
 
 // 历史记录列表
-const historyList = ref([
-  {
-    id: 1,
-    scene: '日常对话',
-    date: '2024-01-15',
-    time: '10:30',
-    duration: '15分钟',
-    messages: 12,
-    preview: 'Hello, how are you today? I\'m doing great, thank you...',
-    tags: ['问候', '天气']
-  },
-  {
-    id: 2,
-    scene: '餐厅点餐',
-    date: '2024-01-14',
-    time: '19:20',
-    duration: '20分钟',
-    messages: 18,
-    preview: 'Welcome to our restaurant. Would you like to see the menu?',
-    tags: ['点餐', '推荐']
-  },
-  {
-    id: 3,
-    scene: '会议',
-    date: '2024-01-13',
-    time: '14:00',
-    duration: '25分钟',
-    messages: 24,
-    preview: 'Let\'s get started with our meeting. First, let\'s review...',
-    tags: ['项目', '讨论']
-  },
-  {
-    id: 4,
-    scene: '面试',
-    date: '2024-01-12',
-    time: '09:00',
-    duration: '30分钟',
-    messages: 15,
-    preview: 'Good morning. Can you tell me about yourself?',
-    tags: ['自我介绍', '经验']
-  },
-  {
-    id: 5,
-    scene: '旅行',
-    date: '2024-01-11',
-    time: '16:45',
-    duration: '18分钟',
-    messages: 20,
-    preview: 'I\'d like to book a hotel room for next week...',
-    tags: ['预订', '酒店']
-  },
-])
+const historyList = ref([])
 
-// 过滤后的历史记录
-const filteredHistory = computed(() => {
-  let result = historyList.value
-  
-  if (searchText.value) {
-    result = result.filter(item => 
-      item.preview.includes(searchText.value) ||
-      item.scene.includes(searchText.value)
-    )
-  }
-  
-  if (filterScene.value) {
-    result = result.filter(item => item.scene === filterScene.value)
-  }
-  
-  return result
+// 初始化数据
+onMounted(() => {
+  loadHistoryList()
 })
 
-// 获取场景颜色
-function getSceneColor(scene) {
-  const colors = {
-    '日常对话': '#409eff',
-    '餐厅点餐': '#67c23a',
-    '购物': '#e6a23c',
-    '旅行': '#f56c6c',
-    '面试': '#909399',
-    '会议': '#9c27b0'
+// 监听搜索和筛选变化
+watch([searchText, filterScene], () => {
+  currentPage.value = 1
+  loadHistoryList()
+})
+
+// 加载历史记录列表
+async function loadHistoryList() {
+  loading.value = true
+  try {
+    const params = {
+      pageNum: currentPage.value,
+      pageSize: pageSize.value,
+      status: 'ENDED' // 只查询已结束的对话
+    }
+
+    if (filterScene.value) {
+      params.sceneId = filterScene.value
+    }
+
+    const response = await getHistoryList(params)
+    if (response.code === 200) {
+      historyList.value = response.data.records || []
+      totalRecords.value = response.data.total || 0
+    }
+  } catch (error) {
+    console.error('加载历史记录失败:', error)
+    ElMessage.error('加载历史记录失败')
+  } finally {
+    loading.value = false
   }
-  return colors[scene] || '#409eff'
 }
 
 // 查看详情
-function viewDetail(record) {
+async function viewDetail(record) {
   currentRecord.value = record
   showDetailDialog.value = true
+  detailLoading.value = true
+
+  try {
+    // 加载消息列表
+    const response = await getSessionMessages(record.id)
+    if (response.code === 200) {
+      messagesList.value = response.data || []
+    }
+  } catch (error) {
+    console.error('加载消息列表失败:', error)
+    ElMessage.error('加载消息列表失败')
+  } finally {
+    detailLoading.value = false
+  }
+}
+
+// 删除对话
+async function deleteSession(record) {
+  try {
+    await ElMessageBox.confirm('确定要删除这条对话记录吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+
+    const response = await deleteSessionApi(record.id)
+    if (response.code === 200) {
+      ElMessage.success('删除成功')
+      loadHistoryList() // 重新加载列表
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('删除对话失败:', error)
+      ElMessage.error('删除失败')
+    }
+  }
+}
+
+// 导出对话
+function exportSession(record) {
+  ElMessage.info('导出功能开发中')
+  // TODO: 实现导出功能
+}
+
+// 格式化日期
+function formatDate(date) {
+  if (!date) return '-'
+  const d = new Date(date)
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  const hours = String(d.getHours()).padStart(2, '0')
+  const minutes = String(d.getMinutes()).padStart(2, '0')
+  return `${year}-${month}-${day} ${hours}:${minutes}`
+}
+
+// 格式化时长
+function formatDuration(seconds) {
+  if (!seconds || seconds === 0) return '0分钟'
+  const minutes = Math.ceil(seconds / 60) // 向上取整
+  if (minutes < 1) return '不足1分钟'
+  if (minutes < 60) return `${minutes}分钟`
+  const hours = Math.floor(minutes / 60)
+  const mins = minutes % 60
+  return `${hours}小时${mins}分钟`
+}
+
+// 获取场景名称
+function getSceneName(sceneId) {
+  if (!sceneId) return '未分类'
+  const sceneNames = {
+    'daily': '日常对话',
+    'restaurant': '餐厅点餐',
+    'shopping': '购物',
+    'travel': '旅行',
+    'interview': '面试',
+    'meeting': '会议'
+  }
+  return sceneNames[sceneId] || sceneId
+}
+
+// 获取场景颜色
+function getSceneColor(sceneId) {
+  if (!sceneId) return '#909399'
+  const colors = {
+    'daily': '#409eff',
+    'restaurant': '#67c23a',
+    'shopping': '#e6a23c',
+    'travel': '#f56c6c',
+    'interview': '#909399',
+    'meeting': '#9c27b0'
+  }
+  return colors[sceneId] || '#409eff'
+}
+
+// 获取评分类型
+function getScoreType(score) {
+  if (score >= 90) return 'success'
+  if (score >= 80) return ''
+  if (score >= 70) return 'warning'
+  return 'danger'
 }
 </script>
 
