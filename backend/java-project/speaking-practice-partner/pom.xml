@@ -64,6 +64,11 @@
                 <artifactId>speaking-practice-partner-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.speakingpractice</groupId>
+                <artifactId>speaking-practice-partner-user</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <!-- MyBatis-Plus -->
             <dependency>

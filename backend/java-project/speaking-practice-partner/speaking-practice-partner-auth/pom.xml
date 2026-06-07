@@ -24,6 +24,11 @@
             <groupId>com.speakingpractice</groupId>
             <artifactId>speaking-practice-partner-common</artifactId>
         </dependency>
+        <!-- 用户模块 -->
+        <dependency>
+            <groupId>com.speakingpractice</groupId>
+            <artifactId>speaking-practice-partner-user</artifactId>
+        </dependency>
     </dependencies>
 
 </project>
