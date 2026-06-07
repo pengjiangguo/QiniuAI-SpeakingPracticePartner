@@ -151,8 +151,10 @@ import {
   UserFilled,
   Lock
 } from '@element-plus/icons-vue'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 
 // 表单引用
 const registerFormRef = ref(null)
@@ -219,14 +221,22 @@ const handleRegister = async () => {
     await registerFormRef.value.validate()
     loading.value = true
 
-    // 模拟注册（实际项目中应该调用后端接口）
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    // 调用后端注册接口
+    const registerData = {
+      username: registerForm.username,
+      nickname: registerForm.nickname || registerForm.username,
+      password: registerForm.password,
+      nativeLanguage: registerForm.nativeLanguage,
+      englishLevel: registerForm.englishLevel,
+      learningGoal: registerForm.learningGoal
+    }
 
-    ElMessage.success('注册成功！请登录')
-    router.push('/login')
+    await userStore.register(registerData)
+
+    ElMessage.success('注册成功！')
+    router.push('/')
   } catch (error) {
     console.error('注册失败:', error)
-    ElMessage.error('注册失败，请检查输入信息')
   } finally {
     loading.value = false
   }
