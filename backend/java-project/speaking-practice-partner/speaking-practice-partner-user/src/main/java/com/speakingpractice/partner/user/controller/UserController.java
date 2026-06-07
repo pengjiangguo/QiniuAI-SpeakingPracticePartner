@@ -2,6 +2,7 @@ package com.speakingpractice.partner.user.controller;
 
 import com.speakingpractice.partner.common.result.Result;
 import com.speakingpractice.partner.user.domain.dto.UserLoginDTO;
+import com.speakingpractice.partner.user.domain.dto.UserPasswordResetDTO;
 import com.speakingpractice.partner.user.domain.dto.UserRegisterDTO;
 import com.speakingpractice.partner.user.domain.dto.UserUpdateDTO;
 import com.speakingpractice.partner.user.domain.vo.UserVO;
@@ -113,6 +114,25 @@ public class UserController {
             return Result.success("更新成功", userVO);
         } catch (Exception e) {
             log.error("更新用户信息失败: {}", e.getMessage());
+            return Result.fail(e.getMessage());
+        }
+    }
+
+    /**
+     * 重置用户密码
+     *
+     * @param passwordResetDTO 密码重置信息
+     * @return 是否成功
+     */
+    @PutMapping("/password")
+    public Result<Boolean> resetPassword(@Valid @RequestBody UserPasswordResetDTO passwordResetDTO) {
+        log.info("重置用户密码请求");
+
+        try {
+            boolean success = userService.resetPassword(passwordResetDTO);
+            return Result.success("密码重置成功", success);
+        } catch (Exception e) {
+            log.error("重置密码失败: {}", e.getMessage());
             return Result.fail(e.getMessage());
         }
     }

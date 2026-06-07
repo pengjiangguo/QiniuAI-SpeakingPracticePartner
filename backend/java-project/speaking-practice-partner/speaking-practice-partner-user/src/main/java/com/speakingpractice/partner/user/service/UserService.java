@@ -1,6 +1,7 @@
 package com.speakingpractice.partner.user.service;
 
 import com.speakingpractice.partner.user.domain.dto.UserLoginDTO;
+import com.speakingpractice.partner.user.domain.dto.UserPasswordResetDTO;
 import com.speakingpractice.partner.user.domain.dto.UserRegisterDTO;
 import com.speakingpractice.partner.user.domain.dto.UserUpdateDTO;
 import com.speakingpractice.partner.user.domain.vo.UserVO;
@@ -45,10 +46,17 @@ public interface UserService {
     /**
      * 更新用户信息
      *
-     * @param userId 用户ID
      * @param updateDTO 更新信息
      * @return 用户信息
      */
     UserVO updateUser(UserUpdateDTO updateDTO);
+
+    /**
+     * 重置用户密码
+     *
+     * @param passwordResetDTO 密码重置信息
+     * @return 是否成功
+     */
+    boolean resetPassword(UserPasswordResetDTO passwordResetDTO);
 
 }
