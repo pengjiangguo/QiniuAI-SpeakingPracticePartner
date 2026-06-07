@@ -65,10 +65,7 @@
                   <span>练习趋势</span>
                 </div>
               </template>
-              <div class="chart-placeholder">
-                <el-icon :size="60" color="#dcdfe6"><TrendCharts /></el-icon>
-                <p>图表开发中</p>
-              </div>
+              <PracticeTrendChart :data="practiceTrend" />
             </el-card>
           </el-col>
           <el-col :span="12">
@@ -78,10 +75,7 @@
                   <span>场景分布</span>
                 </div>
               </template>
-              <div class="chart-placeholder">
-                <el-icon :size="60" color="#dcdfe6"><PieChart /></el-icon>
-                <p>图表开发中</p>
-              </div>
+              <SceneDistributionChart :data="sceneDistribution" />
             </el-card>
           </el-col>
         </el-row>
@@ -151,9 +145,11 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { 
-  ChatDotRound, Clock, TrendCharts, Collection, PieChart 
+  ChatDotRound, Clock, TrendCharts, Collection
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import PracticeTrendChart from './PracticeTrendChart.vue'
+import SceneDistributionChart from './SceneDistributionChart.vue'
 import {
   getStatisticsOverview,
   getPracticeTrend,
@@ -413,20 +409,6 @@ function handlePageChange(pageNum) {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.chart-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 200px;
-  color: #909399;
-}
-
-.chart-placeholder p {
-  margin-top: 12px;
-  font-size: 14px;
 }
 
 .recent-records {
