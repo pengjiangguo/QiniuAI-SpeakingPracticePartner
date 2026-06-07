@@ -102,7 +102,18 @@
     <el-dialog v-model="showAddDialog" title="添加单词" width="500px">
       <el-form :model="wordForm" label-width="100px">
         <el-form-item label="单词">
-          <el-input v-model="wordForm.word" placeholder="输入单词" />
+          <el-input v-model="wordForm.word" placeholder="输入单词">
+            <template #append>
+              <el-button 
+                :icon="MagicStick" 
+                @click="autoGenerateWordInfo"
+                :loading="generating"
+                :disabled="!wordForm.word"
+              >
+                自动生成
+              </el-button>
+            </template>
+          </el-input>
         </el-form-item>
         <el-form-item label="音标（美式）">
           <el-input v-model="wordForm.phoneticUs" placeholder="输入美式音标" />
@@ -120,7 +131,7 @@
           <el-input v-model="wordForm.meaningEn" type="textarea" placeholder="输入英文释义" />
         </el-form-item>
         <el-form-item label="例句">
-          <el-input v-model="wordForm.examples" type="textarea" placeholder="输入例句（JSON格式）" />
+          <el-input v-model="wordForm.examples" type="textarea" placeholder="输入例句" />
         </el-form-item>
         <el-form-item label="场景">
           <el-select v-model="wordForm.sceneId" placeholder="选择场景">
@@ -156,7 +167,18 @@
     <el-dialog v-model="showEditDialog" title="编辑单词" width="500px">
       <el-form :model="editForm" label-width="100px">
         <el-form-item label="单词">
-          <el-input v-model="editForm.word" placeholder="输入单词" />
+          <el-input v-model="editForm.word" placeholder="输入单词">
+            <template #append>
+              <el-button 
+                :icon="MagicStick" 
+                @click="autoGenerateWordInfoForEdit"
+                :loading="generatingEdit"
+                :disabled="!editForm.word"
+              >
+                自动生成
+              </el-button>
+            </template>
+          </el-input>
         </el-form-item>
         <el-form-item label="音标（美式）">
           <el-input v-model="editForm.phoneticUs" placeholder="输入美式音标" />
@@ -174,7 +196,7 @@
           <el-input v-model="editForm.meaningEn" type="textarea" placeholder="输入英文释义" />
         </el-form-item>
         <el-form-item label="例句">
-          <el-input v-model="editForm.examples" type="textarea" placeholder="输入例句（JSON格式）" />
+          <el-input v-model="editForm.examples" type="textarea" placeholder="输入例句" />
         </el-form-item>
         <el-form-item label="场景">
           <el-select v-model="editForm.sceneId" placeholder="选择场景">
@@ -211,7 +233,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { 
-  Search, Plus, Collection, Check, Clock, Edit, Delete 
+  Search, Plus, Collection, Check, Clock, Edit, Delete, MagicStick 
 } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
@@ -221,6 +243,7 @@ import {
   queryVocabularies,
   getVocabularyStatistics
 } from '@/api/vocabulary'
+import { generateWordInfo, formatExamplesToJson } from '@/utils/dictionary'
 
 // 搜索文本
 const searchText = ref('')
@@ -280,6 +303,10 @@ const pagination = ref({
 
 // 加载状态
 const loading = ref(false)
+
+// 自动生成状态
+const generating = ref(false)  // 是否正在生成
+const generatingEdit = ref(false)  // 编辑对话框是否正在生成
 
 // 场景选项
 const sceneOptions = [
@@ -370,6 +397,68 @@ function refresh() {
 defineExpose({
   refresh
 })
+
+// 自动生成词汇信息（添加对话框）
+async function autoGenerateWordInfo() {
+  if (!wordForm.value.word || !wordForm.value.word.trim()) {
+    ElMessage.warning('请先输入单词')
+    return
+  }
+  
+  generating.value = true
+  
+  try {
+    ElMessage.info('正在生成词汇信息...')
+    
+    const wordInfo = await generateWordInfo(wordForm.value.word)
+    
+    // 自动填充表单
+    wordForm.value.phoneticUs = wordInfo.phoneticUs
+    wordForm.value.phoneticUk = wordInfo.phoneticUk
+    wordForm.value.partOfSpeech = wordInfo.partOfSpeech
+    wordForm.value.meaningCn = wordInfo.meaningCn
+    wordForm.value.meaningEn = wordInfo.meaningEn
+    wordForm.value.examples = formatExamplesToJson(wordInfo.examples)
+    
+    ElMessage.success('词汇信息生成成功')
+  } catch (error) {
+    console.error('生成词汇信息失败:', error)
+    ElMessage.error(error.message || '生成失败，请重试')
+  } finally {
+    generating.value = false
+  }
+}
+
+// 自动生成词汇信息（编辑对话框）
+async function autoGenerateWordInfoForEdit() {
+  if (!editForm.value.word || !editForm.value.word.trim()) {
+    ElMessage.warning('请先输入单词')
+    return
+  }
+  
+  generatingEdit.value = true
+  
+  try {
+    ElMessage.info('正在生成词汇信息...')
+    
+    const wordInfo = await generateWordInfo(editForm.value.word)
+    
+    // 自动填充表单
+    editForm.value.phoneticUs = wordInfo.phoneticUs
+    editForm.value.phoneticUk = wordInfo.phoneticUk
+    editForm.value.partOfSpeech = wordInfo.partOfSpeech
+    editForm.value.meaningCn = wordInfo.meaningCn
+    editForm.value.meaningEn = wordInfo.meaningEn
+    editForm.value.examples = formatExamplesToJson(wordInfo.examples)
+    
+    ElMessage.success('词汇信息生成成功')
+  } catch (error) {
+    console.error('生成词汇信息失败:', error)
+    ElMessage.error(error.message || '生成失败，请重试')
+  } finally {
+    generatingEdit.value = false
+  }
+}
 
 // 添加单词
 async function addWord() {
