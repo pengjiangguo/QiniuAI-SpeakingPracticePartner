@@ -526,7 +526,6 @@ function getScoreType(score) {
   background: #ecf5ff;
   color: #409eff;
   align-self: flex-end;
-  max-width: 80%;
   border-bottom-right-radius: 4px;
 }
 
