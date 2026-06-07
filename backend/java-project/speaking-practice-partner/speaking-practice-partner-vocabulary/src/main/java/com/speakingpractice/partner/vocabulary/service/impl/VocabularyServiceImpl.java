@@ -118,9 +118,8 @@ public class VocabularyServiceImpl implements VocabularyService {
             throw new BusinessException("无权限删除该词汇");
         }
 
-        // 逻辑删除
-        vocabulary.setDeleted(1);
-        vocabularyMapper.updateById(vocabulary);
+        // 逻辑删除（使用 MyBatis-Plus 的 deleteById，会自动将 deleted 字段设置为 1）
+        vocabularyMapper.deleteById(vocabularyId);
     }
 
     /**
