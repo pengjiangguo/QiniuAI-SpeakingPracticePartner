@@ -5,6 +5,7 @@ import com.speakingpractice.partner.user.domain.dto.UserLoginDTO;
 import com.speakingpractice.partner.user.domain.dto.UserRegisterDTO;
 import com.speakingpractice.partner.user.domain.vo.UserVO;
 import com.speakingpractice.partner.user.service.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RestController
 @RequestMapping("/user")
+@Tag(name = "用户接口",description = "用户相关接口")
 public class UserController {
 
     @Autowired
