@@ -378,7 +378,6 @@ const handleLogout = async () => {
 const loadLearningStats = async () => {
   try {
     const result = await getStatisticsOverview()
-    console.log('学习统计:', result)
     if (result && result.data) {
       learningStats.value = {
         totalDays: result.data.consecutiveDays || 0,

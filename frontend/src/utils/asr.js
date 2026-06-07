@@ -57,13 +57,9 @@ class TencentASR {
     // 3. 拼接完整URL（不包含wss://）
     const urlStr = `asr.cloud.tencent.com/asr/v2/${this.appId}?${paramStr}`
     
-    console.log('签名原文:', urlStr)
-    
     // 4. 计算HmacSHA1签名
     const hash = CryptoJS.HmacSHA1(urlStr, this.secretKey)
     const signature = CryptoJS.enc.Base64.stringify(hash)
-    
-    console.log('签名结果:', signature)
     
     return signature
   }
@@ -120,7 +116,6 @@ class TencentASR {
         
         this.ws.onopen = () => {
           this.isConnected = true
-          console.log('腾讯云ASR WebSocket连接成功')
           resolve()
         }
         
@@ -143,7 +138,6 @@ class TencentASR {
         }
         
         this.ws.onclose = () => {
-          console.log('腾讯云ASR WebSocket连接关闭')
           this.isConnected = false
           if (this.onEnd) {
             this.onEnd()
@@ -187,8 +181,6 @@ class TencentASR {
       
       // slice_type=2 表示一句话识别结束，是稳态结果
       const isFinal = sliceType === 2
-      
-      console.log(`ASR结果 [slice_type=${sliceType}, index=${index}]:`, text, isFinal ? '(最终结果)' : '(临时结果)')
       
       this.onResult({
         text: text,

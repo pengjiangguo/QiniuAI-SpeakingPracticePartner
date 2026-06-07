@@ -46,7 +46,6 @@ class DeepSeekClient {
     } catch (error) {
       // 如果是取消错误，直接抛出
       if (error.name === 'AbortError' || error.code === 'ERR_CANCELED') {
-        console.log('API请求已取消')
         throw error
       }
       

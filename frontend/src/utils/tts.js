@@ -108,8 +108,6 @@ class TencentTTS {
           IsEnd: 1
         }
         
-        console.log('TTS请求参数:', params)
-        
         // 生成签名
         const signature = await this.generateSignature(params)
         params.Signature = signature
@@ -121,34 +119,28 @@ class TencentTTS {
           .join('&')
         
         const wsUrl = `wss://tts.cloud.tencent.com/stream_ws?${queryString}`
-        console.log('TTS WebSocket URL:', wsUrl)
         
         // 创建WebSocket连接
         this.ws = new WebSocket(wsUrl)
         this.ws.binaryType = 'arraybuffer'
         
         this.ws.onopen = () => {
-          console.log('TTS WebSocket连接已建立')
         }
         
         this.ws.onmessage = async (event) => {
           // 检查数据类型
-          console.log('TTS消息类型:', typeof event.data, '是否ArrayBuffer:', event.data instanceof ArrayBuffer, '是否Blob:', event.data instanceof Blob)
           
           if (event.data instanceof ArrayBuffer) {
             // 音频数据
             this.audioChunks.push(new Uint8Array(event.data))
-            console.log('接收到音频数据（ArrayBuffer），大小:', event.data.byteLength, 'bytes')
           } else if (event.data instanceof Blob) {
             // Blob格式
             const arrayBuffer = await event.data.arrayBuffer()
             this.audioChunks.push(new Uint8Array(arrayBuffer))
-            console.log('接收到音频数据（Blob），大小:', arrayBuffer.byteLength, 'bytes')
           } else {
             // 文本消息
             try {
               const result = JSON.parse(event.data)
-              console.log('TTS文本消息:', result)
               
               if (result.code !== 0) {
                 console.error('TTS错误:', result)
@@ -158,7 +150,6 @@ class TencentTTS {
               
               // 检查是否结束
               if (result.final === 1) {
-                console.log('TTS合成结束，音频片段数:', this.audioChunks.length)
                 this.ws.close()
                 
                 // 返回合并的音频数据
@@ -170,8 +161,6 @@ class TencentTTS {
                   audioData.set(chunk, offset)
                   offset += chunk.length
                 }
-                
-                console.log('返回音频数据，总大小:', audioData.length, 'bytes')
                 
                 // 创建一个新的副本，避免ArrayBuffer被分离
                 const audioDataCopy = new Uint8Array(audioData)
@@ -201,8 +190,6 @@ class TencentTTS {
   async playAudioData(audioData) {
     return new Promise(async (resolve, reject) => {
       try {
-        console.log('播放音频数据，大小:', audioData.length, 'bytes, 格式:', this.codec)
-        
         // 检查音频数据是否有效
         if (!audioData || audioData.length === 0) {
           reject(new Error('音频数据为空'))
@@ -216,8 +203,6 @@ class TencentTTS {
           })
         }
         
-        console.log('AudioContext采样率:', this.audioContext.sampleRate)
-        
         // 根据音频格式解码
         let audioBuffer
         
@@ -228,14 +213,11 @@ class TencentTTS {
           const view = new Uint8Array(arrayBuffer)
           view.set(audioData)
           
-          console.log('创建ArrayBuffer副本，大小:', arrayBuffer.byteLength, 'bytes')
           audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer)
         } else {
           // PCM格式，手动解码
           audioBuffer = this.decodePCM(audioData)
         }
-        
-        console.log('AudioBuffer时长:', audioBuffer.duration, '秒')
         
         // 创建音频源
         this.currentSource = this.audioContext.createBufferSource()
@@ -249,7 +231,6 @@ class TencentTTS {
         // 播放结束
         this.currentSource.onended = () => {
           this.isPlaying = false
-          console.log('音频播放结束')
           resolve() // 播放完成后resolve
         }
         
@@ -300,8 +281,6 @@ class TencentTTS {
           EnableSubtitle: this.enableSubtitle
         }
         
-        console.log('TTS请求参数:', params)
-        
         // 生成签名
         const signature = await this.generateSignature(params)
         params.Signature = signature
@@ -322,8 +301,6 @@ class TencentTTS {
         
         const wsUrl = `wss://tts.cloud.tencent.com/stream_ws?${queryString}`
         
-        console.log('TTS WebSocket URL:', wsUrl)
-        
         // 创建WebSocket连接
         this.ws = new WebSocket(wsUrl)
         
@@ -332,27 +309,22 @@ class TencentTTS {
         
         // WebSocket连接建立
         this.ws.onopen = () => {
-          console.log('TTS WebSocket连接已建立')
         }
         
         // WebSocket消息处理
         this.ws.onmessage = async (event) => {
-          console.log('TTS消息类型:', typeof event.data, '是否ArrayBuffer:', event.data instanceof ArrayBuffer, '是否Blob:', event.data instanceof Blob)
           
           if (event.data instanceof ArrayBuffer) {
             // 二进制音频数据（ArrayBuffer）
-            console.log('接收到音频数据（ArrayBuffer），大小:', event.data.byteLength, 'bytes')
             this.audioChunks.push(new Uint8Array(event.data))
           } else if (event.data instanceof Blob) {
             // 二进制音频数据（Blob）
-            console.log('接收到音频数据（Blob），大小:', event.data.size, 'bytes')
             const arrayBuffer = await event.data.arrayBuffer()
             this.audioChunks.push(new Uint8Array(arrayBuffer))
           } else if (typeof event.data === 'string') {
             // 文本消息（JSON格式）
             try {
               const message = JSON.parse(event.data)
-              console.log('TTS文本消息:', message)
               
               if (message.code !== 0) {
                 console.error('TTS错误:', message.message)
@@ -363,7 +335,6 @@ class TencentTTS {
               
               // final为1表示合成结束
               if (message.final === 1) {
-                console.log('TTS合成结束，音频片段数:', this.audioChunks.length)
                 this.ws.close()
               }
             } catch (error) {
@@ -416,16 +387,12 @@ class TencentTTS {
         offset += chunk.length
       }
       
-      console.log('音频数据总大小:', totalLength, 'bytes, 格式:', this.codec)
-      
       // 创建音频上下文
       if (!this.audioContext) {
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)({
           sampleRate: this.sampleRate // 确保采样率一致
         })
       }
-      
-      console.log('AudioContext采样率:', this.audioContext.sampleRate)
       
       // 根据音频格式解码
       let audioBuffer
@@ -437,8 +404,6 @@ class TencentTTS {
         // MP3格式使用decodeAudioData
         audioBuffer = await this.audioContext.decodeAudioData(audioData.buffer)
       }
-      
-      console.log('AudioBuffer时长:', audioBuffer.duration, '秒')
       
       // 创建音频源
       const source = this.audioContext.createBufferSource()
@@ -519,7 +484,6 @@ class TencentTTS {
         this.currentSource.stop()
         this.currentSource.disconnect()
         this.currentSource = null
-        console.log('音频播放已停止')
       } catch (error) {
         console.error('停止音频播放失败:', error)
       }

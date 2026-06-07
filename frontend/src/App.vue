@@ -8,7 +8,6 @@
 import { onMounted } from 'vue'
 
 onMounted(() => {
-  console.log('AI口语陪练应用已启动')
 })
 </script>
 
