@@ -582,8 +582,8 @@ async function startRecording() {
     try {
       const sessionResponse = await createChatSession({
         sceneId: currentScene.value,
-        title: `${currentSceneConfig.value.name}对话`,
-        startTime: new Date().toISOString()
+        title: `${currentSceneConfig.value.name}对话`
+        // 不传递 startTime，让后端自动设置为当前时间
       })
       
       if (sessionResponse.code === 200) {
