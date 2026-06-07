@@ -422,6 +422,7 @@ import { buildPrompt, SCENE_PROMPTS } from '@/utils/prompt'
 import { correctGrammar } from '@/utils/grammar'
 import { createChatSession, addChatMessage, endChatSession, updateChatSessionScore } from '@/api/chat'
 import { generateLessonSummary, formatSummaryAsText } from '@/utils/summary'
+import { triggerVocabularyLearning } from '@/utils/vocabulary-learn'
 import SummaryPanel from '@/components/SummaryPanel.vue'
 
 // 场景配置
@@ -928,6 +929,15 @@ async function sendText() {
     // 保存发音测评结果
     if (pronunciationResult) {
       pronunciationResults.value[userMessageIndex] = pronunciationResult
+      
+      // 触发词汇学习
+      triggerVocabularyLearning(pronunciationResult, currentScene.value)
+        .then(() => {
+          console.log('词汇学习触发成功')
+        })
+        .catch(error => {
+          console.error('词汇学习触发失败:', error)
+        })
     }
     
     // 保存语法纠错结果
