@@ -107,7 +107,7 @@ qiniuProject/
 
 ### 基础环境
 
-- **Node.js**：>= 18.0
+- **Node.js**：>= 24.0
 - **Java**：JDK 17
 - **Python**：>= 3.9
 - **MySQL**：>= 8.0
