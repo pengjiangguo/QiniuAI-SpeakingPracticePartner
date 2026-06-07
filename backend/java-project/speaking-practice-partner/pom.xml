@@ -35,7 +35,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.0</version>
+        <version>3.1.5</version>
         <relativePath/>
     </parent>
 
@@ -48,7 +48,7 @@
         <maven.compiler.target>17</maven.compiler.target>
 
         <!-- 依赖版本管理 -->
-        <mybatis-plus.version>3.5.5</mybatis-plus.version>
+        <mybatis-plus.version>3.5.6</mybatis-plus.version>
         <hutool.version>5.8.23</hutool.version>
         <fastjson2.version>2.0.43</fastjson2.version>
         <sa-token.version>1.37.0</sa-token.version>
@@ -67,7 +67,67 @@
             </dependency>
             <dependency>
                 <groupId>com.speakingpractice</groupId>
+                <artifactId>speaking-practice-partner-gateway</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.speakingpractice</groupId>
+                <artifactId>speaking-practice-partner-auth</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.speakingpractice</groupId>
                 <artifactId>speaking-practice-partner-user</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.speakingpractice</groupId>
+                <artifactId>speaking-practice-partner-scene</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.speakingpractice</groupId>
+                <artifactId>speaking-practice-partner-chat</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.speakingpractice</groupId>
+                <artifactId>speaking-practice-partner-vocabulary</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.speakingpractice</groupId>
+                <artifactId>speaking-practice-partner-infrastructure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.speakingpractice</groupId>
+                <artifactId>speaking-practice-partner-pronunciation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.speakingpractice</groupId>
+                <artifactId>speaking-practice-partner-correction</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.speakingpractice</groupId>
+                <artifactId>speaking-practice-partner-statistics</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.speakingpractice</groupId>
+                <artifactId>speaking-practice-partner-history</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.speakingpractice</groupId>
+                <artifactId>speaking-practice-partner-config</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.speakingpractice</groupId>
+                <artifactId>speaking-practice-partner-web</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
