@@ -19,6 +19,12 @@ const routes = [
     name: 'Register',
     component: () => import('@/views/Register.vue'),
     meta: { title: '注册 - AI口语陪练', requiresAuth: false }
+  },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: () => import('@/views/Profile.vue'),
+    meta: { title: '个人主页 - AI口语陪练', requiresAuth: true }
   }
 ]
 
