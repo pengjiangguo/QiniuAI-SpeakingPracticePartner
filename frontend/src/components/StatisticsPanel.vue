@@ -30,7 +30,7 @@
           <div class="overview-content">
             <el-icon :size="40" color="#67c23a"><Clock /></el-icon>
             <div class="overview-info">
-              <div class="overview-value">{{ totalMinutes }}分钟</div>
+              <div class="overview-value">{{ formatDuration(totalMinutes) }}</div>
               <div class="overview-label">总练习时长</div>
             </div>
           </div>
@@ -93,33 +93,55 @@
           <template #header>
             <div class="card-header">
               <span>最近练习记录</span>
-              <el-button text type="primary">查看全部</el-button>
+              <el-button text type="primary" @click="viewAll">查看全部</el-button>
             </div>
           </template>
-          <el-table :data="recentRecords" style="width: 100%">
-            <el-table-column prop="date" label="日期" width="120" />
-            <el-table-column prop="scene" label="场景" width="120">
+          <el-table :data="recentRecords" style="width: 100%" v-loading="loading">
+            <el-table-column prop="date" label="日期" width="120">
               <template #default="{ row }">
-                <el-tag size="small">{{ row.scene }}</el-tag>
+                {{ formatDisplayDate(row.date) }}
               </template>
             </el-table-column>
-            <el-table-column prop="duration" label="时长" width="100" />
+            <el-table-column prop="sceneName" label="场景" width="120">
+              <template #default="{ row }">
+                <el-tag size="small">{{ row.sceneName || '未分类' }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="durationMinutes" label="时长" width="100">
+              <template #default="{ row }">
+                {{ formatDuration(row.durationMinutes) }}
+              </template>
+            </el-table-column>
             <el-table-column prop="score" label="评分" width="100">
               <template #default="{ row }">
                 <el-progress 
-                  :percentage="row.score" 
-                  :color="getScoreColor(row.score)"
+                  :percentage="row.score || 0" 
+                  :color="getScoreColor(row.score || 0)"
                   :stroke-width="8"
                 />
               </template>
             </el-table-column>
-            <el-table-column prop="words" label="词汇数" width="100" />
+            <el-table-column prop="wordsCount" label="词汇数" width="100">
+              <template #default="{ row }">
+                {{ row.wordsCount || 0 }}
+              </template>
+            </el-table-column>
             <el-table-column label="操作">
-              <template #default>
-                <el-button size="small" text type="primary">查看详情</el-button>
+              <template #default="{ row }">
+                <el-button size="small" text type="primary" @click="viewDetail(row)">查看详情</el-button>
               </template>
             </el-table-column>
           </el-table>
+          
+          <!-- 分页 -->
+          <el-pagination
+            v-model:current-page="pagination.pageNum"
+            :page-size="pagination.pageSize"
+            :total="pagination.total"
+            layout="total, prev, pager, next"
+            @current-change="handlePageChange"
+            style="margin-top: 20px; justify-content: center;"
+          />
         </el-card>
       </div>
     </div>
@@ -127,28 +149,172 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { 
   ChatDotRound, Clock, TrendCharts, Collection, PieChart 
 } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
+import {
+  getStatisticsOverview,
+  getPracticeTrend,
+  getSceneDistribution,
+  getRecentRecords
+} from '@/api/statistics'
 
 // 日期范围
 const dateRange = ref([])
 
 // 统计数据
-const totalDialogues = ref(156)
-const totalMinutes = ref(1240)
-const averageScore = ref(85)
-const newWords = ref(234)
+const totalDialogues = ref(0)
+const totalMinutes = ref(0)
+const averageScore = ref(0)
+const newWords = ref(0)
+
+// 练习趋势数据
+const practiceTrend = ref([])
+
+// 场景分布数据
+const sceneDistribution = ref([])
 
 // 最近练习记录
-const recentRecords = ref([
-  { date: '2024-01-15', scene: '日常对话', duration: '15分钟', score: 88, words: 12 },
-  { date: '2024-01-14', scene: '餐厅点餐', duration: '20分钟', score: 92, words: 18 },
-  { date: '2024-01-13', scene: '会议', duration: '25分钟', score: 85, words: 24 },
-  { date: '2024-01-12', scene: '面试', duration: '30分钟', score: 78, words: 15 },
-  { date: '2024-01-11', scene: '旅行', duration: '18分钟', score: 90, words: 20 },
-])
+const recentRecords = ref([])
+
+// 分页参数
+const pagination = ref({
+  pageNum: 1,
+  pageSize: 5,
+  total: 0
+})
+
+// 加载状态
+const loading = ref(false)
+
+// 初始化数据
+onMounted(() => {
+  loadStatistics()
+  loadPracticeTrend()
+  loadSceneDistribution()
+  loadRecentRecords()
+})
+
+// 监听日期范围变化
+watch(dateRange, (newVal) => {
+  if (newVal && newVal.length === 2) {
+    loadStatistics()
+    loadPracticeTrend()
+    loadSceneDistribution()
+  }
+})
+
+// 加载统计数据
+async function loadStatistics() {
+  try {
+    const params = {}
+    if (dateRange.value && dateRange.value.length === 2) {
+      params.startDate = formatDate(dateRange.value[0])
+      params.endDate = formatDate(dateRange.value[1])
+    }
+    
+    const response = await getStatisticsOverview(params)
+    if (response.code === 200) {
+      const data = response.data
+      totalDialogues.value = data.totalDialogues || 0
+      totalMinutes.value = data.totalMinutes || 0
+      averageScore.value = data.averageScore || 0
+      newWords.value = data.newWords || 0
+    }
+  } catch (error) {
+    console.error('加载统计数据失败:', error)
+    ElMessage.error('加载统计数据失败')
+  }
+}
+
+// 加载练习趋势
+async function loadPracticeTrend() {
+  try {
+    const params = {}
+    if (dateRange.value && dateRange.value.length === 2) {
+      params.startDate = formatDate(dateRange.value[0])
+      params.endDate = formatDate(dateRange.value[1])
+    }
+    
+    const response = await getPracticeTrend(params)
+    if (response.code === 200) {
+      practiceTrend.value = response.data || []
+    }
+  } catch (error) {
+    console.error('加载练习趋势失败:', error)
+  }
+}
+
+// 加载场景分布
+async function loadSceneDistribution() {
+  try {
+    const params = {}
+    if (dateRange.value && dateRange.value.length === 2) {
+      params.startDate = formatDate(dateRange.value[0])
+      params.endDate = formatDate(dateRange.value[1])
+    }
+    
+    const response = await getSceneDistribution(params)
+    if (response.code === 200) {
+      sceneDistribution.value = response.data || []
+    }
+  } catch (error) {
+    console.error('加载场景分布失败:', error)
+  }
+}
+
+// 加载最近练习记录
+async function loadRecentRecords() {
+  loading.value = true
+  try {
+    const response = await getRecentRecords({
+      pageNum: pagination.value.pageNum,
+      pageSize: pagination.value.pageSize
+    })
+    
+    if (response.code === 200) {
+      recentRecords.value = response.data.records || []
+      pagination.value.total = response.data.total || 0
+    }
+  } catch (error) {
+    console.error('加载最近练习记录失败:', error)
+    ElMessage.error('加载最近练习记录失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+// 格式化日期
+function formatDate(date) {
+  if (!date) return null
+  const d = new Date(date)
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+// 格式化显示日期
+function formatDisplayDate(date) {
+  if (!date) return '-'
+  const d = new Date(date)
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+// 格式化时长
+function formatDuration(minutes) {
+  if (!minutes || minutes === 0) return '0分钟'
+  if (minutes < 1) return '不足1分钟'
+  if (minutes < 60) return `${minutes}分钟`
+  const hours = Math.floor(minutes / 60)
+  const mins = minutes % 60
+  return `${hours}小时${mins}分钟`
+}
 
 // 获取评分颜色
 function getScoreColor(score) {
@@ -156,6 +322,22 @@ function getScoreColor(score) {
   if (score >= 80) return '#409eff'
   if (score >= 70) return '#e6a23c'
   return '#f56c6c'
+}
+
+// 查看详情
+function viewDetail(row) {
+  ElMessage.info('详情功能开发中')
+}
+
+// 查看全部
+function viewAll() {
+  ElMessage.info('查看全部功能开发中')
+}
+
+// 分页改变
+function handlePageChange(pageNum) {
+  pagination.value.pageNum = pageNum
+  loadRecentRecords()
 }
 </script>
 
