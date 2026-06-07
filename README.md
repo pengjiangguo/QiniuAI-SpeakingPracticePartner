@@ -462,6 +462,7 @@ pytest tests/
 |--------|------|------|--------|
 | Spring Boot | 3.1.5 | 简化 Spring 应用开发的框架 | Apache-2.0 |
 | Spring Cloud | - | 微服务框架，提供服务治理能力 | Apache-2.0 |
+| Sa-Token | 1.37.0 | 轻量级 Java 权限认证框架，用于登录认证和权限控制 | Apache-2.0 |
 | MyBatis-Plus | - | MyBatis 增强工具，简化数据库操作 | Apache-2.0 |
 | MySQL Connector | 8.0 | MySQL 数据库驱动 | GPL-2.0 |
 | Lettuce | - | Redis 客户端，用于 Redis 连接 | Apache-2.0 |
