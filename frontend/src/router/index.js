@@ -6,6 +6,18 @@ const routes = [
     name: 'Home',
     component: () => import('@/views/Home.vue'),
     meta: { title: 'AI口语陪练' }
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('@/views/Login.vue'),
+    meta: { title: '登录 - AI口语陪练' }
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: () => import('@/views/Register.vue'),
+    meta: { title: '注册 - AI口语陪练' }
   }
 ]
 
