@@ -6,7 +6,7 @@ const routes = [
     path: '/',
     name: 'Home',
     component: () => import('@/views/Home.vue'),
-    meta: { title: 'AI口语陪练', requiresAuth: true }
+    meta: { title: 'AI口语陪练', requiresAuth: false }
   },
   {
     path: '/login',
