@@ -3,7 +3,6 @@ package com.speakingpractice.partner.auth.domain.vo;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 /**
  * 登录响应VO
@@ -29,18 +28,13 @@ public class LoginVO implements Serializable {
     private String nickname;
 
     /**
-     * 访问令牌
+     * Token名称
      */
-    private String accessToken;
+    private String tokenName;
 
     /**
-     * 刷新令牌
+     * Token值
      */
-    private String refreshToken;
-
-    /**
-     * 令牌过期时间
-     */
-    private LocalDateTime expiresAt;
+    private String tokenValue;
 
 }
