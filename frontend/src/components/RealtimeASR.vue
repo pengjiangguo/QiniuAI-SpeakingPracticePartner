@@ -355,9 +355,38 @@
           >
             停止对话
           </el-button>
+          
+          <!-- 生成总结按钮 -->
+          <el-button
+            v-if="!isRecording && dialogueHistory.length > 0"
+            type="success"
+            size="default"
+            :icon="DataAnalysis"
+            @click="showSummaryDialog"
+            round
+          >
+            生成总结
+          </el-button>
         </div>
       </div>
     </div>
+    
+    <!-- 总结对话框 -->
+    <el-dialog
+      v-model="summaryDialogVisible"
+      title="课后学习总结"
+      width="800px"
+      :close-on-click-modal="false"
+    >
+      <SummaryPanel
+        :summary="currentSummary"
+        :loading="summaryLoading"
+        :error="summaryError"
+        @close="closeSummaryDialog"
+        @retry="retryGenerateSummary"
+        @download="downloadSummary"
+      />
+    </el-dialog>
   </div>
 </template>
 
@@ -381,7 +410,8 @@ import {
   VideoPlay,
   Grid,
   Warning,
-  SuccessFilled
+  SuccessFilled,
+  DataAnalysis
 } from '@element-plus/icons-vue'
 import AudioCapture from '@/utils/audio'
 import TencentASR from '@/utils/asr'
@@ -391,6 +421,8 @@ import TencentTTS, { TTS_VOICES } from '@/utils/tts'
 import { buildPrompt, SCENE_PROMPTS } from '@/utils/prompt'
 import { correctGrammar } from '@/utils/grammar'
 import { createChatSession, addChatMessage, endChatSession, updateChatSessionScore } from '@/api/chat'
+import { generateLessonSummary, formatSummaryAsText } from '@/utils/summary'
+import SummaryPanel from '@/components/SummaryPanel.vue'
 
 // 场景配置
 const sceneConfigs = SCENE_PROMPTS
@@ -418,6 +450,13 @@ const autoPlayTTS = ref(true) // 自动播放AI回复
 // 播放状态管理
 const currentPlayingIndex = ref(-1) // 当前正在播放的消息索引
 const isPaused = ref(false) // 是否暂停
+
+// 总结相关状态
+const summaryDialogVisible = ref(false) // 总结对话框是否可见
+const currentSummary = ref(null) // 当前总结数据
+const summaryLoading = ref(false) // 总结生成中
+const summaryError = ref(null) // 总结错误信息
+const dialogueStartTime = ref(null) // 对话开始时间
 
 // AbortController用于取消当前对话
 let currentAbortController = null
@@ -653,6 +692,9 @@ async function startRecording() {
     
     // 开始采集
     audioCapture.start()
+    
+    // 记录对话开始时间
+    dialogueStartTime.value = Date.now()
     
     isRecording.value = true
     isInitializing.value = false
@@ -1156,7 +1198,96 @@ function clearDialogue() {
   currentPlayingIndex.value = -1
   isPaused.value = false
   
+  // 重置总结状态
+  currentSummary.value = null
+  summaryError.value = null
+  dialogueStartTime.value = null
+  
   ElMessage.success('对话已清空')
+}
+
+/**
+ * 显示总结对话框
+ */
+async function showSummaryDialog() {
+  summaryDialogVisible.value = true
+  summaryLoading.value = true
+  summaryError.value = null
+  currentSummary.value = null
+  
+  try {
+    // 收集语法错误
+    const grammarErrors = []
+    Object.values(grammarResults.value).forEach(result => {
+      if (result && result.has_error && result.errors) {
+        grammarErrors.push(...result.errors)
+      }
+    })
+    
+    // 收集发音评分
+    const pronunciationScores = []
+    Object.values(pronunciationResults.value).forEach(result => {
+      if (result && result.pronAccuracy) {
+        pronunciationScores.push(result.pronAccuracy)
+      }
+    })
+    
+    // 计算对话时长
+    const duration = dialogueStartTime.value 
+      ? (Date.now() - dialogueStartTime.value) / 1000 
+      : 0
+    
+    // 生成总结
+    const summary = await generateLessonSummary({
+      dialogueHistory: dialogueHistory.value,
+      sceneConfig: currentSceneConfig.value,
+      grammarErrors,
+      pronunciationScores,
+      duration
+    })
+    
+    currentSummary.value = summary
+  } catch (error) {
+    console.error('生成总结失败:', error)
+    summaryError.value = error.message || '生成总结失败，请重试'
+  } finally {
+    summaryLoading.value = false
+  }
+}
+
+/**
+ * 关闭总结对话框
+ */
+function closeSummaryDialog() {
+  summaryDialogVisible.value = false
+}
+
+/**
+ * 重试生成总结
+ */
+async function retryGenerateSummary() {
+  await showSummaryDialog()
+}
+
+/**
+ * 下载总结
+ */
+function downloadSummary(summary) {
+  try {
+    const text = formatSummaryAsText(summary)
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `学习总结_${new Date().toLocaleString().replace(/[/:]/g, '-')}.txt`
+    link.click()
+    URL.revokeObjectURL(url)
+    
+    ElMessage.success('总结已下载')
+  } catch (error) {
+    console.error('下载总结失败:', error)
+    ElMessage.error('下载失败')
+  }
 }
 
 // 组件卸载时清理资源
