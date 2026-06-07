@@ -1,5 +1,6 @@
 package com.speakingpractice.partner.user.service.impl;
 
+import cn.hutool.crypto.digest.BCrypt;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.speakingpractice.partner.common.enums.ResultCode;
 import com.speakingpractice.partner.common.exception.BusinessException;
@@ -12,7 +13,6 @@ import com.speakingpractice.partner.user.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,9 +27,6 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserMapper userMapper;
-
-    @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
 
     /**
      * 用户注册
@@ -58,7 +55,7 @@ public class UserServiceImpl implements UserService {
         BeanUtils.copyProperties(registerDTO, user);
 
         // 3. 加密密码
-        String encodedPassword = passwordEncoder.encode(registerDTO.getPassword());
+        String encodedPassword = BCrypt.hashpw(registerDTO.getPassword());
         user.setPassword(encodedPassword);
 
         // 4. 设置默认值
@@ -119,7 +116,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // 3. 验证密码
-        boolean passwordMatches = passwordEncoder.matches(loginDTO.getPassword(), user.getPassword());
+        boolean passwordMatches = BCrypt.checkpw(loginDTO.getPassword(), user.getPassword());
         if (!passwordMatches) {
             log.warn("密码错误，用户名: {}", loginDTO.getUsername());
             throw new BusinessException(ResultCode.LOGIN_ERROR);

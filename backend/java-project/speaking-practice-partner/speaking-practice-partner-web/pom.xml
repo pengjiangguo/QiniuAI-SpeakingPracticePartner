@@ -25,6 +25,54 @@
             <artifactId>speaking-practice-partner-common</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.speakingpractice</groupId>
+            <artifactId>speaking-practice-partner-gateway</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.speakingpractice</groupId>
+            <artifactId>speaking-practice-partner-auth</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.speakingpractice</groupId>
+            <artifactId>speaking-practice-partner-user</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.speakingpractice</groupId>
+            <artifactId>speaking-practice-partner-scene</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.speakingpractice</groupId>
+            <artifactId>speaking-practice-partner-chat</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.speakingpractice</groupId>
+            <artifactId>speaking-practice-partner-vocabulary</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.speakingpractice</groupId>
+            <artifactId>speaking-practice-partner-infrastructure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.speakingpractice</groupId>
+            <artifactId>speaking-practice-partner-pronunciation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.speakingpractice</groupId>
+            <artifactId>speaking-practice-partner-correction</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.speakingpractice</groupId>
+            <artifactId>speaking-practice-partner-statistics</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.speakingpractice</groupId>
+            <artifactId>speaking-practice-partner-history</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.speakingpractice</groupId>
+            <artifactId>speaking-practice-partner-config</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
         </dependency>
