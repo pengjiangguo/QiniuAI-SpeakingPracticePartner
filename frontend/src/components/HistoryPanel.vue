@@ -5,13 +5,6 @@
       <div class="panel-header">
         <h2>对话历史</h2>
         <div class="header-actions">
-          <el-input
-            v-model="searchText"
-            placeholder="搜索对话内容"
-            :prefix-icon="Search"
-            clearable
-            style="width: 250px"
-          />
           <el-select v-model="filterScene" placeholder="场景筛选" clearable style="width: 150px">
             <el-option label="全部场景" value="" />
             <el-option label="日常对话" value="daily" />
