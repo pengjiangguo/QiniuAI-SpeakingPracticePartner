@@ -139,11 +139,60 @@
         </el-card>
       </div>
     </div>
+
+    <!-- 详情对话框 -->
+    <el-dialog
+      v-model="detailDialogVisible"
+      title="练习记录详情"
+      width="600px"
+      :close-on-click-modal="false"
+    >
+      <div v-if="currentRecord" class="detail-content">
+        <el-descriptions :column="2" border>
+          <el-descriptions-item label="会话ID">
+            {{ currentRecord.sessionId }}
+          </el-descriptions-item>
+          <el-descriptions-item label="练习日期">
+            {{ formatDisplayDate(currentRecord.date) }}
+          </el-descriptions-item>
+          <el-descriptions-item label="场景">
+            <el-tag size="small">{{ currentRecord.sceneName || '未分类' }}</el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="练习时长">
+            {{ formatDuration(currentRecord.durationMinutes) }}
+          </el-descriptions-item>
+          <el-descriptions-item label="综合评分">
+            <el-progress 
+              :percentage="currentRecord.score || 0" 
+              :color="getScoreColor(currentRecord.score || 0)"
+              :stroke-width="15"
+              style="width: 150px;"
+            />
+          </el-descriptions-item>
+          <el-descriptions-item label="消息数量">
+            {{ currentRecord.messageCount || 0 }} 条
+          </el-descriptions-item>
+          <el-descriptions-item label="词汇数量">
+            {{ currentRecord.wordsCount || 0 }} 个
+          </el-descriptions-item>
+        </el-descriptions>
+
+        <div class="detail-actions" style="margin-top: 20px; text-align: center;">
+          <el-button type="primary" @click="goToChatDetail">
+            查看完整对话
+          </el-button>
+          <el-button @click="detailDialogVisible = false">
+            关闭
+          </el-button>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { 
   ChatDotRound, Clock, TrendCharts, Collection
 } from '@element-plus/icons-vue'
@@ -156,6 +205,8 @@ import {
   getSceneDistribution,
   getRecentRecords
 } from '@/api/statistics'
+
+const router = useRouter()
 
 // 日期范围
 const dateRange = ref([])
@@ -184,6 +235,10 @@ const pagination = ref({
 
 // 加载状态
 const loading = ref(false)
+
+// 详情对话框
+const detailDialogVisible = ref(false)
+const currentRecord = ref(null)
 
 // 初始化数据
 onMounted(() => {
@@ -322,12 +377,22 @@ function getScoreColor(score) {
 
 // 查看详情
 function viewDetail(row) {
-  ElMessage.info('详情功能开发中')
+  currentRecord.value = row
+  detailDialogVisible.value = true
 }
 
 // 查看全部
 function viewAll() {
-  ElMessage.info('查看全部功能开发中')
+  // 跳转到历史记录页面
+  router.push('/history')
+}
+
+// 查看完整对话
+function goToChatDetail() {
+  if (currentRecord.value && currentRecord.value.sessionId) {
+    // 跳转到对话详情页面
+    router.push(`/chat/${currentRecord.value.sessionId}`)
+  }
 }
 
 // 分页改变

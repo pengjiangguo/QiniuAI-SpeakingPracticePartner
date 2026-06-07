@@ -52,7 +52,7 @@ const updateChart = () => {
 
   const pieData = props.data.map(item => ({
     name: item.sceneName || '未分类',
-    value: item.count || 0
+    value: item.dialogueCount || 0
   }))
 
   const option = {
