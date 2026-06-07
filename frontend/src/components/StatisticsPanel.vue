@@ -400,6 +400,19 @@ function handlePageChange(pageNum) {
   pagination.value.pageNum = pageNum
   loadRecentRecords()
 }
+
+// 刷新所有数据
+function refresh() {
+  loadStatistics()
+  loadPracticeTrend()
+  loadSceneDistribution()
+  loadRecentRecords()
+}
+
+// 暴露刷新方法给父组件
+defineExpose({
+  refresh
+})
 </script>
 
 <style scoped>
