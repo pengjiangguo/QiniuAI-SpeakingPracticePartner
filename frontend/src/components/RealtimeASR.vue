@@ -390,6 +390,7 @@ import TencentSOE from '@/utils/soe'
 import TencentTTS, { TTS_VOICES } from '@/utils/tts'
 import { buildPrompt, SCENE_PROMPTS } from '@/utils/prompt'
 import { correctGrammar } from '@/utils/grammar'
+import { createChatSession, addChatMessage, endChatSession, updateChatSessionScore } from '@/api/chat'
 
 // 场景配置
 const sceneConfigs = SCENE_PROMPTS
@@ -403,6 +404,9 @@ const dialogueHistory = ref([])
 const messagesContainer = ref(null)
 const pronunciationResults = ref({}) // 发音测评结果，key为消息索引
 const grammarResults = ref({}) // 语法纠错结果，key为消息索引
+
+// 对话会话ID
+const currentSessionId = ref(null)
 
 // 配置
 const engineModelType = ref('16k_en')
@@ -574,6 +578,23 @@ async function startRecording() {
     
     isInitializing.value = true
     
+    // 创建对话会话
+    try {
+      const sessionResponse = await createChatSession({
+        sceneId: currentScene.value,
+        title: `${currentSceneConfig.value.name}对话`,
+        startTime: new Date().toISOString()
+      })
+      
+      if (sessionResponse.code === 200) {
+        currentSessionId.value = sessionResponse.data.id
+        console.log('对话会话已创建:', currentSessionId.value)
+      }
+    } catch (error) {
+      console.error('创建对话会话失败:', error)
+      // 不影响对话继续进行
+    }
+    
     // 初始化DeepSeek客户端
     if (!deepseekClient) {
       initDeepSeekClient()
@@ -650,10 +671,95 @@ async function startRecording() {
 /**
  * 停止录音识别
  */
-function stopRecording() {
+async function stopRecording() {
   cleanup()
   isRecording.value = false
+  
+  // 结束对话会话并更新评分
+  if (currentSessionId.value) {
+    try {
+      // 计算平均评分
+      const scores = {
+        pronunciationScore: calculateAveragePronunciationScore(),
+        grammarScore: calculateAverageGrammarScore(),
+        overallScore: calculateOverallScore()
+      }
+      
+      // 更新评分
+      await updateChatSessionScore(currentSessionId.value, scores)
+      
+      // 结束会话
+      await endChatSession(currentSessionId.value)
+      
+      console.log('对话会话已结束:', currentSessionId.value)
+      ElMessage.success('对话已保存')
+    } catch (error) {
+      console.error('结束对话会话失败:', error)
+      ElMessage.error('保存对话失败')
+    }
+    
+    // 清空会话ID
+    currentSessionId.value = null
+  }
+  
   ElMessage.info('停止语音对话')
+}
+
+/**
+ * 计算平均发音评分
+ */
+function calculateAveragePronunciationScore() {
+  const scores = Object.values(pronunciationResults.value)
+    .filter(result => result && result.pronAccuracy)
+    .map(result => Math.round(result.pronAccuracy))
+  
+  if (scores.length === 0) return null
+  return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+}
+
+/**
+ * 计算平均语法评分
+ */
+function calculateAverageGrammarScore() {
+  const results = Object.values(grammarResults.value)
+    .filter(result => result)
+  
+  if (results.length === 0) return null
+  
+  // 根据错误数量评分
+  const scores = results.map(result => {
+    if (!result.has_error) return 100
+    const errorCount = result.errors ? result.errors.length : 0
+    return Math.max(60, 100 - errorCount * 10)
+  })
+  
+  return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+}
+
+/**
+ * 计算综合评分
+ */
+function calculateOverallScore() {
+  const pronunciationScore = calculateAveragePronunciationScore()
+  const grammarScore = calculateAverageGrammarScore()
+  
+  if (pronunciationScore === null && grammarScore === null) return null
+  
+  // 综合评分 = 发音评分 * 0.6 + 语法评分 * 0.4
+  let overall = 0
+  let weightSum = 0
+  
+  if (pronunciationScore !== null) {
+    overall += pronunciationScore * 0.6
+    weightSum += 0.6
+  }
+  
+  if (grammarScore !== null) {
+    overall += grammarScore * 0.4
+    weightSum += 0.4
+  }
+  
+  return Math.round(overall / weightSum)
 }
 
 /**
@@ -785,6 +891,33 @@ async function sendText() {
     // 保存语法纠错结果
     if (grammarResult) {
       grammarResults.value[userMessageIndex] = grammarResult
+    }
+    
+    // 保存对话消息到后端
+    if (currentSessionId.value) {
+      try {
+        // 保存用户消息
+        await addChatMessage({
+          sessionId: currentSessionId.value,
+          role: 'USER',
+          content: textToSend,
+          pronunciationScore: pronunciationResult ? Math.round(pronunciationResult.pronAccuracy) : null,
+          grammarErrorCount: grammarResult && grammarResult.has_error ? (grammarResult.errors ? grammarResult.errors.length : 0) : 0,
+          corrected: grammarResult && grammarResult.has_error ? 1 : 0
+        })
+        
+        // 保存AI回复
+        await addChatMessage({
+          sessionId: currentSessionId.value,
+          role: 'ASSISTANT',
+          content: aiResponse
+        })
+        
+        console.log('对话消息已保存')
+      } catch (error) {
+        console.error('保存对话消息失败:', error)
+        // 不影响对话继续进行
+      }
     }
     
     // 添加AI回复
