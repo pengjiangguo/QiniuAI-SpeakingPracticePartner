@@ -345,8 +345,6 @@ async function startRecording() {
     
     // 设置回调
     soeClient.onResult = (result) => {
-      console.log('评测结果:', result)
-      
       // 更新最后一次结果
       lastResult.value = result
       
@@ -357,16 +355,11 @@ async function startRecording() {
       // 获取已识别的单词数量
       const recognizedWords = result.words ? result.words.length : 0
       
-      console.log('参考文本单词数:', totalWords, '已识别单词数:', recognizedWords)
-      console.log('录音时长:', recordingDuration.value)
-      
       // 检查是否读完最后一个单词
       // 已识别单词数 >= 参考文本单词数
       // 录音时长 >= 最小时长
       const hasReadAllWords = recognizedWords >= totalWords
       const hasMinTime = recordingDuration.value >= MIN_RECORDING_TIME
-      
-      console.log('是否读完所有单词:', hasReadAllWords, '是否满足最小时长:', hasMinTime)
       
       if (hasReadAllWords && hasMinTime) {
         // 已读完所有单词，开始倒计时自动结束

@@ -63,7 +63,6 @@ class AudioCapture {
         }
       }
       
-      console.log('音频采集初始化成功')
       return true
     } catch (error) {
       console.error('音频采集初始化失败:', error)
@@ -85,7 +84,6 @@ class AudioCapture {
     this.scriptProcessor.connect(this.audioContext.destination)
     
     this.isCapturing = true
-    console.log('开始音频采集')
     return true
   }
 
@@ -102,8 +100,6 @@ class AudioCapture {
     if (this.sourceNode) {
       this.sourceNode.disconnect()
     }
-    
-    console.log('停止音频采集')
   }
 
   /**
@@ -124,8 +120,6 @@ class AudioCapture {
     
     this.scriptProcessor = null
     this.sourceNode = null
-    
-    console.log('音频采集资源已释放')
   }
 
   /**

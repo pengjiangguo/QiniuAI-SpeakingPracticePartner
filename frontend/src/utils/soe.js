@@ -126,12 +126,10 @@ class TencentSOE {
     return new Promise(async (resolve, reject) => {
       try {
         const url = await this.generateWsUrl(refText)
-        console.log('连接口语评测服务:', url)
         
         this.ws = new WebSocket(url)
         
         this.ws.onopen = () => {
-          console.log('口语评测WebSocket已连接')
           this.isConnected = true
           resolve()
         }
@@ -139,7 +137,6 @@ class TencentSOE {
         this.ws.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data)
-            console.log('收到评测结果:', data)
             
             if (data.code !== 0) {
               console.error('评测错误:', data.message)
@@ -162,7 +159,6 @@ class TencentSOE {
             
             // 识别结束
             if (data.final === 1) {
-              console.log('评测结束')
               this.disconnect()
               if (this.onEnd) {
                 this.onEnd()
@@ -180,7 +176,6 @@ class TencentSOE {
         }
         
         this.ws.onclose = () => {
-          console.log('WebSocket已关闭')
           this.isConnected = false
         }
       } catch (error) {
@@ -194,8 +189,6 @@ class TencentSOE {
    */
   parseResult(resultData) {
     try {
-      console.log('解析评测结果数据:', resultData)
-      
       const result = {
         suggestedScore: 0,
         pronAccuracy: 0,

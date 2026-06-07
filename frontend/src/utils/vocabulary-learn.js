@@ -14,11 +14,8 @@ import { generateWordInfo } from '@/utils/dictionary'
  */
 export async function triggerVocabularyLearning(pronunciationResult, sceneId = 'daily') {
   if (!pronunciationResult || !pronunciationResult.words || pronunciationResult.words.length === 0) {
-    console.log('没有单词需要学习')
     return
   }
-
-  console.log('触发词汇学习，单词数量:', pronunciationResult.words.length)
 
   // 遍历每个单词
   for (const wordInfo of pronunciationResult.words) {
@@ -46,12 +43,9 @@ export async function triggerVocabularyLearning(pronunciationResult, sceneId = '
           score: Math.round(wordInfo.pronAccuracy),
           duration: 5 // 假设每个单词学习时长为5秒
         })
-        
-        console.log(`词汇学习记录已更新: ${word}, 正确: ${isCorrect}, 分数: ${wordInfo.pronAccuracy}`)
       } else {
         // 词汇不存在，自动生成词汇信息并添加到生词本
         try {
-          console.log(`开始生成词汇信息: ${word}`)
           const wordInfoData = await generateWordInfo(word)
           
           const newVocabulary = await addVocabulary({
@@ -68,8 +62,6 @@ export async function triggerVocabularyLearning(pronunciationResult, sceneId = '
           })
           
           if (newVocabulary.code === 200) {
-            console.log(`新词汇已添加到生词本: ${word}`)
-            
             // 添加学习记录
             await learnVocabulary({
               vocabularyId: newVocabulary.data.id,
@@ -93,8 +85,6 @@ export async function triggerVocabularyLearning(pronunciationResult, sceneId = '
           })
           
           if (newVocabulary.code === 200) {
-            console.log(`新词汇已添加到生词本（默认）: ${word}`)
-            
             // 添加学习记录
             await learnVocabulary({
               vocabularyId: newVocabulary.data.id,
@@ -112,8 +102,6 @@ export async function triggerVocabularyLearning(pronunciationResult, sceneId = '
       // 继续处理下一个单词
     }
   }
-
-  console.log('词汇学习触发完成')
 }
 
 /**
@@ -150,15 +138,10 @@ async function findVocabularyByWord(word) {
  */
 export async function batchTriggerVocabularyLearning(pronunciationResults, sceneId = 'daily') {
   if (!pronunciationResults || pronunciationResults.length === 0) {
-    console.log('没有发音测评结果')
     return
   }
-
-  console.log('批量触发词汇学习，结果数量:', pronunciationResults.length)
 
   for (const result of pronunciationResults) {
     await triggerVocabularyLearning(result, sceneId)
   }
-
-  console.log('批量词汇学习完成')
 }
