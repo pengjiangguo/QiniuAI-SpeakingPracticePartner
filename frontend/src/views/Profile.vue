@@ -37,44 +37,41 @@
       </div>
     </div>
 
+    <!-- 个人资料 -->
+    <div class="profile-section">
+      <div class="section-header">
+        <h3>个人资料</h3>
+        <el-button type="primary" size="small" @click="handleEditProfile">
+          编辑资料
+        </el-button>
+      </div>
+      
+      <div class="profile-info">
+        <div class="info-item">
+          <span class="info-label">昵称</span>
+          <span class="info-value">{{ userStore.userInfo?.nickname || '未设置' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">母语</span>
+          <span class="info-value">{{ getLanguageText(userStore.userInfo?.nativeLanguage) }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">英语水平</span>
+          <span class="info-value">{{ getEnglishLevelText(userStore.userInfo?.englishLevel) }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">学习目标</span>
+          <span class="info-value">{{ userStore.userInfo?.learningGoal || '未设置' }}</span>
+        </div>
+      </div>
+    </div>
+
     <!-- 功能菜单 -->
     <div class="menu-section">
       <div class="menu-item" @click="handleMenuClick('profile')">
         <div class="menu-left">
           <el-icon :size="20"><UserFilled /></el-icon>
           <span>个人资料</span>
-        </div>
-        <el-icon :size="16"><ArrowRight /></el-icon>
-      </div>
-
-      <div class="menu-item" @click="handleMenuClick('learning')">
-        <div class="menu-left">
-          <el-icon :size="20"><TrendCharts /></el-icon>
-          <span>学习记录</span>
-        </div>
-        <el-icon :size="16"><ArrowRight /></el-icon>
-      </div>
-
-      <div class="menu-item" @click="handleMenuClick('achievements')">
-        <div class="menu-left">
-          <el-icon :size="20"><Trophy /></el-icon>
-          <span>成就徽章</span>
-        </div>
-        <el-icon :size="16"><ArrowRight /></el-icon>
-      </div>
-
-      <div class="menu-item" @click="handleMenuClick('settings')">
-        <div class="menu-left">
-          <el-icon :size="20"><Setting /></el-icon>
-          <span>账号设置</span>
-        </div>
-        <el-icon :size="16"><ArrowRight /></el-icon>
-      </div>
-
-      <div class="menu-item" @click="handleMenuClick('feedback')">
-        <div class="menu-left">
-          <el-icon :size="20"><ChatLineSquare /></el-icon>
-          <span>意见反馈</span>
         </div>
         <el-icon :size="16"><ArrowRight /></el-icon>
       </div>
@@ -86,6 +83,52 @@
         </div>
       </div>
     </div>
+
+    <!-- 编辑资料对话框 -->
+    <el-dialog
+      v-model="editDialogVisible"
+      title="编辑个人资料"
+      width="500px"
+      :close-on-click-modal="false"
+    >
+      <el-form :model="editForm" label-width="100px">
+        <el-form-item label="昵称">
+          <el-input v-model="editForm.nickname" placeholder="请输入昵称" maxlength="50" />
+        </el-form-item>
+        <el-form-item label="母语">
+          <el-select v-model="editForm.nativeLanguage" placeholder="请选择母语">
+            <el-option label="中文" value="zh-CN" />
+            <el-option label="英文" value="en-US" />
+            <el-option label="日文" value="ja-JP" />
+            <el-option label="韩文" value="ko-KR" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="英语水平">
+          <el-select v-model="editForm.englishLevel" placeholder="请选择英语水平">
+            <el-option label="初学者 (A1)" value="A1" />
+            <el-option label="初级 (A2)" value="A2" />
+            <el-option label="中级 (B1)" value="B1" />
+            <el-option label="中高级 (B2)" value="B2" />
+            <el-option label="高级 (C1)" value="C1" />
+            <el-option label="精通 (C2)" value="C2" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="学习目标">
+          <el-input
+            v-model="editForm.learningGoal"
+            type="textarea"
+            placeholder="请输入学习目标"
+            :rows="3"
+            maxlength="200"
+            show-word-limit
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="editDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleSaveProfile" :loading="saving">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -97,14 +140,12 @@ import {
   ArrowLeft,
   User,
   UserFilled,
-  TrendCharts,
-  Trophy,
-  Setting,
-  ChatLineSquare,
   SwitchButton,
   ArrowRight
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
+import { getStatisticsOverview } from '@/api/statistics'
+import { updateUserInfo } from '@/api/user'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -119,6 +160,44 @@ const learningStats = ref({
   totalDuration: '0h'
 })
 
+// 编辑对话框
+const editDialogVisible = ref(false)
+const saving = ref(false)
+const editForm = ref({
+  nickname: '',
+  nativeLanguage: '',
+  englishLevel: '',
+  learningGoal: ''
+})
+
+// 语言映射
+const languageMap = {
+  'zh-CN': '中文',
+  'en-US': '英文',
+  'ja-JP': '日文',
+  'ko-KR': '韩文'
+}
+
+// 英语水平映射
+const englishLevelMap = {
+  'A1': '初学者',
+  'A2': '初级',
+  'B1': '中级',
+  'B2': '中高级',
+  'C1': '高级',
+  'C2': '精通'
+}
+
+// 获取语言文本
+const getLanguageText = (language) => {
+  return languageMap[language] || '未设置'
+}
+
+// 获取英语水平文本
+const getEnglishLevelText = (level) => {
+  return englishLevelMap[level] || '未设置'
+}
+
 // 返回上一页
 const goBack = () => {
   router.back()
@@ -128,20 +207,39 @@ const goBack = () => {
 const handleMenuClick = (type) => {
   switch (type) {
     case 'profile':
-      ElMessage.info('个人资料功能开发中')
+      handleEditProfile()
       break
-    case 'learning':
-      router.push('/')
-      break
-    case 'achievements':
-      ElMessage.info('成就徽章功能开发中')
-      break
-    case 'settings':
-      ElMessage.info('账号设置功能开发中')
-      break
-    case 'feedback':
-      ElMessage.info('意见反馈功能开发中')
-      break
+  }
+}
+
+// 编辑个人资料
+const handleEditProfile = () => {
+  editForm.value = {
+    nickname: userStore.userInfo?.nickname || '',
+    nativeLanguage: userStore.userInfo?.nativeLanguage || 'zh-CN',
+    englishLevel: userStore.userInfo?.englishLevel || 'B1',
+    learningGoal: userStore.userInfo?.learningGoal || ''
+  }
+  editDialogVisible.value = true
+}
+
+// 保存个人资料
+const handleSaveProfile = async () => {
+  try {
+    saving.value = true
+    
+    const result = await updateUserInfo(editForm.value)
+    
+    // 更新用户信息
+    await userStore.getUserInfo()
+    
+    ElMessage.success('保存成功')
+    editDialogVisible.value = false
+  } catch (error) {
+    console.error('保存个人资料失败:', error)
+    ElMessage.error(error.message || '保存失败')
+  } finally {
+    saving.value = false
   }
 }
 
@@ -170,15 +268,46 @@ const handleLogout = async () => {
 
 // 加载学习统计
 const loadLearningStats = async () => {
-  // TODO: 从后端获取学习统计数据
-  learningStats.value = {
-    totalDays: 15,
-    totalWords: 128,
-    totalDuration: '12h'
+  try {
+    const result = await getStatisticsOverview()
+    console.log('学习统计:', result)
+    if (result && result.data) {
+      learningStats.value = {
+        totalDays: result.data.consecutiveDays || 0,
+        totalWords: result.data.masteredWords || 0,
+        totalDuration: formatDuration(result.data.totalMinutes || 0)
+      }
+    }
+  } catch (error) {
+    console.error('加载学习统计失败:', error)
+    // 使用默认值
+    learningStats.value = {
+      totalDays: 0,
+      totalWords: 0,
+      totalDuration: '0h'
+    }
   }
 }
 
-onMounted(() => {
+// 格式化时长
+const formatDuration = (minutes) => {
+  if (minutes < 60) {
+    return `${minutes}m`
+  }
+  const hours = Math.floor(minutes / 60)
+  const mins = minutes % 60
+  return mins > 0 ? `${hours}h${mins}m` : `${hours}h`
+}
+
+onMounted(async () => {
+  // 加载用户信息
+  try {
+    await userStore.getUserInfo()
+  } catch (error) {
+    console.error('加载用户信息失败:', error)
+  }
+  
+  // 加载学习统计
   loadLearningStats()
 })
 </script>
@@ -282,6 +411,59 @@ onMounted(() => {
   font-size: 12px;
   color: #909399;
   margin-top: 4px;
+}
+
+/* 个人资料 */
+.profile-section {
+  margin: 0 20px 20px;
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.section-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #303133;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f5f7fa;
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-size: 14px;
+  color: #909399;
+  min-width: 80px;
+}
+
+.info-value {
+  font-size: 14px;
+  color: #303133;
+  text-align: right;
+  flex: 1;
 }
 
 /* 功能菜单 */
