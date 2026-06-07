@@ -16,14 +16,13 @@
     <!-- 子模块 -->
     <modules>
         <module>speaking-practice-partner-common</module>
-        <module>speaking-practice-partner-domain</module>
-        <module>speaking-practice-partner-infrastructure</module>
         <module>speaking-practice-partner-gateway</module>
         <module>speaking-practice-partner-auth</module>
         <module>speaking-practice-partner-user</module>
         <module>speaking-practice-partner-scene</module>
         <module>speaking-practice-partner-chat</module>
         <module>speaking-practice-partner-vocabulary</module>
+        <module>speaking-practice-partner-infrastructure</module>
         <module>speaking-practice-partner-pronunciation</module>
         <module>speaking-practice-partner-correction</module>
         <module>speaking-practice-partner-statistics</module>
@@ -63,16 +62,6 @@
             <dependency>
                 <groupId>com.speakingpractice</groupId>
                 <artifactId>speaking-practice-partner-common</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.speakingpractice</groupId>
-                <artifactId>speaking-practice-partner-domain</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.speakingpractice</groupId>
-                <artifactId>speaking-practice-partner-infrastructure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

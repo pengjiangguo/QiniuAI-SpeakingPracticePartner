@@ -19,17 +19,10 @@
     <description>纠错模块 - 语法纠错、表达优化</description>
 
     <dependencies>
+        <!-- 公共模块 -->
         <dependency>
             <groupId>com.speakingpractice</groupId>
             <artifactId>speaking-practice-partner-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.speakingpractice</groupId>
-            <artifactId>speaking-practice-partner-domain</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.speakingpractice</groupId>
-            <artifactId>speaking-practice-partner-infrastructure</artifactId>
         </dependency>
     </dependencies>
 

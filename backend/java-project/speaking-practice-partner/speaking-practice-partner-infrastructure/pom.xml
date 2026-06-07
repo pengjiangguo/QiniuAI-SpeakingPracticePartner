@@ -25,12 +25,6 @@
             <artifactId>speaking-practice-partner-common</artifactId>
         </dependency>
 
-        <!-- Domain模块 -->
-        <dependency>
-            <groupId>com.speakingpractice</groupId>
-            <artifactId>speaking-practice-partner-domain</artifactId>
-        </dependency>
-
         <!-- MySQL -->
         <dependency>
             <groupId>com.mysql</groupId>

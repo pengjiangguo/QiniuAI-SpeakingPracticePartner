@@ -25,14 +25,6 @@
             <artifactId>speaking-practice-partner-common</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.speakingpractice</groupId>
-            <artifactId>speaking-practice-partner-domain</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.speakingpractice</groupId>
-            <artifactId>speaking-practice-partner-infrastructure</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
         </dependency>

@@ -1,4 +1,4 @@
-package com.speakingpractice.partner.domain.entity;
+package com.speakingpractice.partner.scene.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
