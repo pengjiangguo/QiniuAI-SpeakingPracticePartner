@@ -104,8 +104,11 @@ import {
   Key,
   Picture
 } from '@element-plus/icons-vue'
+import { useUserStore } from '@/stores/user'
+import api from '@/utils/api'
 
 const router = useRouter()
+const userStore = useUserStore()
 
 // 表单引用
 const loginFormRef = ref(null)
@@ -113,7 +116,7 @@ const loginFormRef = ref(null)
 // 加载状态
 const loading = ref(false)
 
-// 验证码图片（模拟）
+// 验证码图片
 const captchaImage = ref('')
 
 // 登录表单数据
@@ -146,45 +149,18 @@ onMounted(() => {
   refreshCaptcha()
 })
 
-// 刷新验证码（模拟）
-const refreshCaptcha = () => {
-  // 生成模拟验证码图片（实际项目中应该调用后端接口）
-  const canvas = document.createElement('canvas')
-  canvas.width = 130
-  canvas.height = 48
-  const ctx = canvas.getContext('2d')
-
-  // 背景
-  ctx.fillStyle = '#f0f0f0'
-  ctx.fillRect(0, 0, 130, 48)
-
-  // 验证码文本
-  const code = generateRandomCode(4)
-  loginForm.captchaKey = 'mock_' + Date.now()
-  ctx.font = '24px Arial'
-  ctx.fillStyle = '#333'
-  ctx.fillText(code, 30, 32)
-
-  // 干扰线
-  for (let i = 0; i < 5; i++) {
-    ctx.strokeStyle = '#999'
-    ctx.beginPath()
-    ctx.moveTo(Math.random() * 130, Math.random() * 48)
-    ctx.lineTo(Math.random() * 130, Math.random() * 48)
-    ctx.stroke()
+// 刷新验证码（调用后端接口）
+const refreshCaptcha = async () => {
+  try {
+    const response = await api.get('/auth/captcha')
+    if (response.code === 200) {
+      captchaImage.value = response.data.captchaImage
+      loginForm.captchaKey = response.data.captchaKey
+    }
+  } catch (error) {
+    console.error('获取验证码失败:', error)
+    ElMessage.error('获取验证码失败，请刷新页面重试')
   }
-
-  captchaImage.value = canvas.toDataURL()
-}
-
-// 生成随机验证码
-const generateRandomCode = (length) => {
-  const chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678'
-  let code = ''
-  for (let i = 0; i < length; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  return code
 }
 
 // 处理登录
@@ -195,14 +171,26 @@ const handleLogin = async () => {
     await loginFormRef.value.validate()
     loading.value = true
 
-    // 模拟登录（实际项目中应该调用后端接口）
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // 调用后端登录接口
+    const loginData = {
+      username: loginForm.username,
+      password: loginForm.password,
+      captchaKey: loginForm.captchaKey,
+      captchaCode: loginForm.captchaCode
+    }
+
+    await userStore.login(loginData)
 
     ElMessage.success('登录成功！')
-    router.push('/')
+
+    // 获取重定向路径
+    const redirect = router.currentRoute.value.query.redirect || '/'
+    router.push(redirect)
   } catch (error) {
     console.error('登录失败:', error)
-    ElMessage.error('登录失败，请检查输入信息')
+    // 刷新验证码
+    refreshCaptcha()
+    loginForm.captchaCode = ''
   } finally {
     loading.value = false
   }
