@@ -256,9 +256,8 @@ public class ChatService {
             throw new BusinessException("无权限删除该会话");
         }
 
-        // 逻辑删除会话
-        session.setDeleted(1);
-        chatSessionMapper.updateById(session);
+        // 逻辑删除会话（使用 MyBatis-Plus 的 deleteById，会自动将 deleted 字段设置为 1）
+        chatSessionMapper.deleteById(sessionId);
     }
 
     /**
