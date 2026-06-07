@@ -7,6 +7,12 @@
         <span class="logo-text">AI口语陪练</span>
       </div>
       <div class="top-actions">
+        <div class="user-info" @click="goToProfile">
+          <el-avatar :size="32" :src="userAvatar">
+            <el-icon :size="18"><User /></el-icon>
+          </el-avatar>
+          <span class="username">{{ userStore.userInfo?.nickname || userStore.userInfo?.username || '用户' }}</span>
+        </div>
         <el-button :icon="Setting" circle @click="showSettings = true" />
       </div>
     </div>
@@ -67,21 +73,35 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { 
-  ChatDotRound, 
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import {
+  ChatDotRound,
   Microphone,
-  Collection, 
-  DataLine, 
+  Collection,
+  DataLine,
   Clock,
-  Setting 
+  Setting,
+  User
 } from '@element-plus/icons-vue'
+import { useUserStore } from '@/stores/user'
 import RealtimeASR from '@/components/RealtimeASR.vue'
 import PronunciationEval from '@/components/PronunciationEval.vue'
 import VocabularyPanel from '@/components/VocabularyPanel.vue'
 import StatisticsPanel from '@/components/StatisticsPanel.vue'
 import HistoryPanel from '@/components/HistoryPanel.vue'
 import SettingsPanel from '@/components/SettingsPanel.vue'
+
+const router = useRouter()
+const userStore = useUserStore()
+
+// 用户头像
+const userAvatar = computed(() => userStore.userInfo?.avatar || '')
+
+// 跳转到个人主页
+const goToProfile = () => {
+  router.push('/profile')
+}
 
 // 当前选中的功能标签
 const currentTab = ref('chat')
@@ -133,7 +153,33 @@ const showSettings = ref(false)
 
 .top-actions {
   display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
   gap: 8px;
+  padding: 4px 12px 4px 4px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: #f5f7fa;
+}
+
+.user-info:hover {
+  background: #ecf5ff;
+}
+
+.username {
+  font-size: 14px;
+  font-weight: 500;
+  color: #303133;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* 功能标签栏 */
