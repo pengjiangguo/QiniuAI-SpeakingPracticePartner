@@ -424,6 +424,10 @@ import { createChatSession, addChatMessage, endChatSession, updateChatSessionSco
 import { generateLessonSummary, formatSummaryAsText } from '@/utils/summary'
 import { triggerVocabularyLearning } from '@/utils/vocabulary-learn'
 import SummaryPanel from '@/components/SummaryPanel.vue'
+import { useSettingsStore } from '@/stores/settings'
+
+// 使用设置 store
+const settingsStore = useSettingsStore()
 
 // 场景配置
 const sceneConfigs = SCENE_PROMPTS
@@ -441,12 +445,12 @@ const grammarResults = ref({}) // 语法纠错结果，key为消息索引
 // 对话会话ID
 const currentSessionId = ref(null)
 
-// 配置
-const engineModelType = ref('16k_en')
+// 配置（从 store 中读取）
+const engineModelType = computed(() => settingsStore.engineModelType)
 const currentScene = ref('daily')
-const englishLevel = ref('B1')
-const ttsVoiceType = ref(TTS_VOICES.find(voice => voice.value === 101001)?.value) // TTS音色
-const autoPlayTTS = ref(true) // 自动播放AI回复
+const englishLevel = computed(() => settingsStore.englishLevel)
+const ttsVoiceType = computed(() => settingsStore.ttsVoiceType)
+const autoPlayTTS = computed(() => settingsStore.autoPlayTTS)
 
 // 播放状态管理
 const currentPlayingIndex = ref(-1) // 当前正在播放的消息索引
@@ -477,6 +481,57 @@ let currentAudioChunks = [] // 当前录音的音频数据
 const currentSceneConfig = computed(() => {
   return sceneConfigs[currentScene.value] || sceneConfigs.daily
 })
+
+// 加载设置
+function loadSettings() {
+  const savedSettings = localStorage.getItem('app-settings')
+  if (savedSettings) {
+    try {
+      const settings = JSON.parse(savedSettings)
+      
+      // 应用设置
+      if (settings.engineModelType) {
+        engineModelType.value = settings.engineModelType
+      }
+      if (settings.englishLevel) {
+        englishLevel.value = settings.englishLevel
+      }
+      if (settings.ttsVoiceType) {
+        ttsVoiceType.value = settings.ttsVoiceType
+      }
+      if (settings.autoPlayTTS !== undefined) {
+        autoPlayTTS.value = settings.autoPlayTTS
+      }
+      
+      console.log('设置已加载:', settings)
+    } catch (error) {
+      console.error('加载设置失败:', error)
+    }
+  }
+}
+
+// 处理设置更新事件
+function handleSettingsUpdated(event) {
+  if (event.detail) {
+    const settings = event.detail
+    
+    // 应用设置
+    if (settings.engineModelType) {
+      engineModelType.value = settings.engineModelType
+    }
+    if (settings.englishLevel) {
+      englishLevel.value = settings.englishLevel
+    }
+    if (settings.ttsVoiceType) {
+      ttsVoiceType.value = settings.ttsVoiceType
+    }
+    if (settings.autoPlayTTS !== undefined) {
+      autoPlayTTS.value = settings.autoPlayTTS
+    }
+    
+    console.log('设置已更新:', settings)
+  }
+}
 
 // 初始化DeepSeek客户端
 function initDeepSeekClient() {
