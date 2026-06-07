@@ -37,8 +37,8 @@ const updateChart = () => {
   if (!chartInstance) return
 
   const dates = props.data.map(item => item.date)
-  const dialogues = props.data.map(item => item.dialogues || 0)
-  const minutes = props.data.map(item => item.minutes || 0)
+  const dialogues = props.data.map(item => item.dialogueCount || 0)
+  const minutes = props.data.map(item => item.durationMinutes || 0)
 
   const option = {
     tooltip: {
