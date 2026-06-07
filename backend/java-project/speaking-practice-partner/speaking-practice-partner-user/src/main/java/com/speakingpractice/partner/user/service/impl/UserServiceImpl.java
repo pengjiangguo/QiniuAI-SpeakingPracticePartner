@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.speakingpractice.partner.common.enums.ResultCode;
 import com.speakingpractice.partner.common.exception.BusinessException;
 import com.speakingpractice.partner.user.domain.dto.UserLoginDTO;
+import com.speakingpractice.partner.user.domain.dto.UserPasswordResetDTO;
 import com.speakingpractice.partner.user.domain.dto.UserRegisterDTO;
 import com.speakingpractice.partner.user.domain.dto.UserUpdateDTO;
 import com.speakingpractice.partner.user.domain.entity.User;
@@ -244,6 +245,51 @@ public class UserServiceImpl implements UserService {
         BeanUtils.copyProperties(user, userVO);
 
         return userVO;
+    }
+
+    /**
+     * 重置用户密码
+     *
+     * @param passwordResetDTO 密码重置信息
+     * @return 是否成功
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean resetPassword(UserPasswordResetDTO passwordResetDTO) {
+        String userId = StpUtil.getLoginIdAsString();
+        log.info("重置用户密码，用户ID: {}", userId);
+
+        // 1. 查询用户
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getId, userId);
+        queryWrapper.eq(User::getDeleted, 0);
+        User user = userMapper.selectOne(queryWrapper);
+
+        if (user == null) {
+            log.warn("用户不存在，用户ID: {}", userId);
+            throw new BusinessException(ResultCode.USER_NOT_EXISTS);
+        }
+
+        // 2. 验证原密码
+        if (!BCrypt.checkpw(passwordResetDTO.getOldPassword(), user.getPassword())) {
+            log.warn("原密码错误，用户ID: {}", userId);
+            throw new BusinessException("原密码错误");
+        }
+
+        // 3. 加密新密码
+        String encodedPassword = BCrypt.hashpw(passwordResetDTO.getNewPassword());
+        user.setPassword(encodedPassword);
+        user.setUpdatedAt(LocalDateTime.now());
+
+        // 4. 保存更新
+        int result = userMapper.updateById(user);
+        if (result <= 0) {
+            log.error("重置密码失败，用户ID: {}", userId);
+            throw new BusinessException("重置密码失败");
+        }
+
+        log.info("重置密码成功，用户ID: {}", userId);
+        return true;
     }
 
 }
