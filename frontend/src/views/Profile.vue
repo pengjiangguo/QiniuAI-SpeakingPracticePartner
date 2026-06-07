@@ -423,10 +423,11 @@ onMounted(async () => {
 <style scoped>
 .profile-container {
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
   background: rgba(2, 2, 2, 0);
-  display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  padding-bottom: 20px;
 }
 
 /* 顶部导航栏 */
