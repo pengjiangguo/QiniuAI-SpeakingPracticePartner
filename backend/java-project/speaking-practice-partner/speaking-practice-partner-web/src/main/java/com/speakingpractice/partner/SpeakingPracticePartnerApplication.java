@@ -11,6 +11,10 @@ public class SpeakingPracticePartnerApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(SpeakingPracticePartnerApplication.class, args);
+        System.out.println(
+                "==================================\n" +
+                "AI口语陪练后端启动成功\n" +
+                "==================================\n");
     }
 
 }

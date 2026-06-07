@@ -51,8 +51,9 @@
         <mybatis-plus.version>3.5.5</mybatis-plus.version>
         <hutool.version>5.8.23</hutool.version>
         <fastjson2.version>2.0.43</fastjson2.version>
-        <jwt.version>0.12.3</jwt.version>
+        <sa-token.version>1.37.0</sa-token.version>
         <knife4j.version>4.3.0</knife4j.version>
+        <captcha.version>1.6.2</captcha.version>
     </properties>
 
     <!-- 依赖管理 -->
@@ -91,21 +92,25 @@
                 <version>${fastjson2.version}</version>
             </dependency>
 
-            <!-- JWT -->
+            <!-- Sa-Token 权限认证 -->
             <dependency>
-                <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt-api</artifactId>
-                <version>${jwt.version}</version>
+                <groupId>cn.dev33</groupId>
+                <artifactId>sa-token-spring-boot3-starter</artifactId>
+                <version>${sa-token.version}</version>
             </dependency>
+
+            <!-- Sa-Token 整合 Redis (使用 jackson 序列化方式) -->
             <dependency>
-                <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt-impl</artifactId>
-                <version>${jwt.version}</version>
+                <groupId>cn.dev33</groupId>
+                <artifactId>sa-token-redis-jackson</artifactId>
+                <version>${sa-token.version}</version>
             </dependency>
+
+            <!-- 验证码 -->
             <dependency>
-                <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt-jackson</artifactId>
-                <version>${jwt.version}</version>
+                <groupId>com.github.whvcse</groupId>
+                <artifactId>easy-captcha</artifactId>
+                <version>${captcha.version}</version>
             </dependency>
 
             <!-- Knife4j API文档 -->
