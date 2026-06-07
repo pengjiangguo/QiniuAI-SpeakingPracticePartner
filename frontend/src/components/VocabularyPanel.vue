@@ -51,22 +51,30 @@
 
       <!-- 词汇列表 -->
       <div class="vocabulary-list">
-        <el-table :data="filteredVocabulary" style="width: 100%">
+        <el-table 
+          :data="filteredVocabulary" 
+          style="width: 100%"
+          v-loading="loading"
+        >
           <el-table-column prop="word" label="单词" width="150" />
-          <el-table-column prop="phonetic" label="音标" width="150" />
-          <el-table-column prop="meaning" label="释义" />
-          <el-table-column prop="scene" label="场景" width="120">
+          <el-table-column prop="phoneticUs" label="音标（美式）" width="150">
             <template #default="{ row }">
-              <el-tag size="small">{{ row.scene }}</el-tag>
+              {{ row.phoneticUs || row.phoneticUk || '-' }}
             </template>
           </el-table-column>
-          <el-table-column prop="status" label="状态" width="100">
+          <el-table-column prop="meaningCn" label="中文释义" />
+          <el-table-column prop="sceneId" label="场景" width="120">
+            <template #default="{ row }">
+              <el-tag size="small">{{ getSceneName(row.sceneId) }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="masteryLevel" label="状态" width="100">
             <template #default="{ row }">
               <el-tag 
-                :type="row.status === 'mastered' ? 'success' : 'warning'" 
+                :type="getMasteryLevelTag(row.masteryLevel).type" 
                 size="small"
               >
-                {{ row.status === 'mastered' ? '已掌握' : '学习中' }}
+                {{ getMasteryLevelTag(row.masteryLevel).text }}
               </el-tag>
             </template>
           </el-table-column>
@@ -77,30 +85,65 @@
             </template>
           </el-table-column>
         </el-table>
+        
+        <!-- 分页 -->
+        <el-pagination
+          v-model:current-page="pagination.pageNum"
+          :page-size="pagination.pageSize"
+          :total="pagination.total"
+          layout="total, prev, pager, next"
+          @current-change="handlePageChange"
+          style="margin-top: 20px; justify-content: center;"
+        />
       </div>
     </div>
 
     <!-- 添加单词对话框 -->
     <el-dialog v-model="showAddDialog" title="添加单词" width="500px">
-      <el-form :model="wordForm" label-width="80px">
+      <el-form :model="wordForm" label-width="100px">
         <el-form-item label="单词">
           <el-input v-model="wordForm.word" placeholder="输入单词" />
         </el-form-item>
-        <el-form-item label="音标">
-          <el-input v-model="wordForm.phonetic" placeholder="输入音标" />
+        <el-form-item label="音标（美式）">
+          <el-input v-model="wordForm.phoneticUs" placeholder="输入美式音标" />
         </el-form-item>
-        <el-form-item label="释义">
-          <el-input v-model="wordForm.meaning" type="textarea" placeholder="输入释义" />
+        <el-form-item label="音标（英式）">
+          <el-input v-model="wordForm.phoneticUk" placeholder="输入英式音标" />
+        </el-form-item>
+        <el-form-item label="词性">
+          <el-input v-model="wordForm.partOfSpeech" placeholder="输入词性" />
+        </el-form-item>
+        <el-form-item label="中文释义">
+          <el-input v-model="wordForm.meaningCn" type="textarea" placeholder="输入中文释义" />
+        </el-form-item>
+        <el-form-item label="英文释义">
+          <el-input v-model="wordForm.meaningEn" type="textarea" placeholder="输入英文释义" />
+        </el-form-item>
+        <el-form-item label="例句">
+          <el-input v-model="wordForm.examples" type="textarea" placeholder="输入例句（JSON格式）" />
         </el-form-item>
         <el-form-item label="场景">
-          <el-select v-model="wordForm.scene" placeholder="选择场景">
-            <el-option label="日常对话" value="日常对话" />
-            <el-option label="餐厅点餐" value="餐厅点餐" />
-            <el-option label="购物" value="购物" />
-            <el-option label="旅行" value="旅行" />
-            <el-option label="面试" value="面试" />
-            <el-option label="会议" value="会议" />
+          <el-select v-model="wordForm.sceneId" placeholder="选择场景">
+            <el-option 
+              v-for="scene in sceneOptions" 
+              :key="scene.value" 
+              :label="scene.label" 
+              :value="scene.value" 
+            />
           </el-select>
+        </el-form-item>
+        <el-form-item label="难度等级">
+          <el-select v-model="wordForm.difficulty" placeholder="选择难度">
+            <el-option 
+              v-for="diff in difficultyOptions" 
+              :key="diff.value" 
+              :label="diff.label" 
+              :value="diff.value" 
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="备注">
+          <el-input v-model="wordForm.notes" type="textarea" placeholder="输入备注" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -108,15 +151,76 @@
         <el-button type="primary" @click="addWord">确定</el-button>
       </template>
     </el-dialog>
+
+    <!-- 编辑单词对话框 -->
+    <el-dialog v-model="showEditDialog" title="编辑单词" width="500px">
+      <el-form :model="editForm" label-width="100px">
+        <el-form-item label="单词">
+          <el-input v-model="editForm.word" placeholder="输入单词" />
+        </el-form-item>
+        <el-form-item label="音标（美式）">
+          <el-input v-model="editForm.phoneticUs" placeholder="输入美式音标" />
+        </el-form-item>
+        <el-form-item label="音标（英式）">
+          <el-input v-model="editForm.phoneticUk" placeholder="输入英式音标" />
+        </el-form-item>
+        <el-form-item label="词性">
+          <el-input v-model="editForm.partOfSpeech" placeholder="输入词性" />
+        </el-form-item>
+        <el-form-item label="中文释义">
+          <el-input v-model="editForm.meaningCn" type="textarea" placeholder="输入中文释义" />
+        </el-form-item>
+        <el-form-item label="英文释义">
+          <el-input v-model="editForm.meaningEn" type="textarea" placeholder="输入英文释义" />
+        </el-form-item>
+        <el-form-item label="例句">
+          <el-input v-model="editForm.examples" type="textarea" placeholder="输入例句（JSON格式）" />
+        </el-form-item>
+        <el-form-item label="场景">
+          <el-select v-model="editForm.sceneId" placeholder="选择场景">
+            <el-option 
+              v-for="scene in sceneOptions" 
+              :key="scene.value" 
+              :label="scene.label" 
+              :value="scene.value" 
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="难度等级">
+          <el-select v-model="editForm.difficulty" placeholder="选择难度">
+            <el-option 
+              v-for="diff in difficultyOptions" 
+              :key="diff.value" 
+              :label="diff.label" 
+              :value="diff.value" 
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="备注">
+          <el-input v-model="editForm.notes" type="textarea" placeholder="输入备注" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showEditDialog = false">取消</el-button>
+        <el-button type="primary" @click="updateWord">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { 
   Search, Plus, Collection, Check, Clock, Edit, Delete 
 } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import {
+  addVocabulary,
+  updateVocabulary,
+  deleteVocabulary,
+  queryVocabularies,
+  getVocabularyStatistics
+} from '@/api/vocabulary'
 
 // 搜索文本
 const searchText = ref('')
@@ -124,70 +228,267 @@ const searchText = ref('')
 // 显示添加对话框
 const showAddDialog = ref(false)
 
+// 显示编辑对话框
+const showEditDialog = ref(false)
+
 // 单词表单
 const wordForm = ref({
   word: '',
-  phonetic: '',
-  meaning: '',
-  scene: ''
+  phoneticUs: '',
+  phoneticUk: '',
+  partOfSpeech: '',
+  meaningCn: '',
+  meaningEn: '',
+  examples: '',
+  sceneId: '',
+  difficulty: '',
+  notes: ''
 })
 
-// 词汇列表（示例数据）
-const vocabularyList = ref([
-  { word: 'hello', phonetic: '/həˈləʊ/', meaning: '你好', scene: '日常对话', status: 'mastered' },
-  { word: 'order', phonetic: '/ˈɔːrdər/', meaning: '点餐，订单', scene: '餐厅点餐', status: 'learning' },
-  { word: 'meeting', phonetic: '/ˈmiːtɪŋ/', meaning: '会议', scene: '会议', status: 'learning' },
-  { word: 'interview', phonetic: '/ˈɪntərvjuː/', meaning: '面试', scene: '面试', status: 'learning' },
-])
+// 编辑表单
+const editForm = ref({
+  id: '',
+  word: '',
+  phoneticUs: '',
+  phoneticUk: '',
+  partOfSpeech: '',
+  meaningCn: '',
+  meaningEn: '',
+  examples: '',
+  sceneId: '',
+  difficulty: '',
+  notes: ''
+})
+
+// 词汇列表
+const vocabularyList = ref([])
+
+// 统计数据
+const statistics = ref({
+  totalCount: 0,
+  masteredCount: 0,
+  learningCount: 0,
+  needReviewCount: 0
+})
+
+// 分页参数
+const pagination = ref({
+  pageNum: 1,
+  pageSize: 10,
+  total: 0
+})
+
+// 加载状态
+const loading = ref(false)
+
+// 场景选项
+const sceneOptions = [
+  { label: '日常对话', value: 'daily' },
+  { label: '餐厅点餐', value: 'restaurant' },
+  { label: '购物', value: 'shopping' },
+  { label: '旅行', value: 'travel' },
+  { label: '面试', value: 'interview' },
+  { label: '会议', value: 'meeting' }
+]
+
+// 难度选项
+const difficultyOptions = [
+  { label: 'A1-初级', value: 'A1' },
+  { label: 'A2-基础', value: 'A2' },
+  { label: 'B1-中级', value: 'B1' },
+  { label: 'B2-中高级', value: 'B2' },
+  { label: 'C1-高级', value: 'C1' },
+  { label: 'C2-精通', value: 'C2' }
+]
 
 // 过滤后的词汇列表
 const filteredVocabulary = computed(() => {
   if (!searchText.value) return vocabularyList.value
   return vocabularyList.value.filter(item => 
     item.word.includes(searchText.value) || 
-    item.meaning.includes(searchText.value)
+    item.meaningCn.includes(searchText.value)
   )
 })
 
 // 已掌握数量
 const masteredCount = computed(() => {
-  return vocabularyList.value.filter(item => item.status === 'mastered').length
+  return statistics.value.masteredCount
 })
 
 // 学习中数量
 const learningCount = computed(() => {
-  return vocabularyList.value.filter(item => item.status === 'learning').length
+  return statistics.value.learningCount + statistics.value.needReviewCount
 })
 
+// 初始化数据
+onMounted(() => {
+  loadVocabularies()
+  loadStatistics()
+})
+
+// 加载词汇列表
+async function loadVocabularies() {
+  loading.value = true
+  try {
+    const response = await queryVocabularies({
+      pageNum: pagination.value.pageNum,
+      pageSize: pagination.value.pageSize,
+      keyword: searchText.value
+    })
+    
+    if (response.code === 200) {
+      vocabularyList.value = response.data.records
+      pagination.value.total = response.data.total
+    }
+  } catch (error) {
+    console.error('加载词汇列表失败:', error)
+    ElMessage.error('加载词汇列表失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+// 加载统计数据
+async function loadStatistics() {
+  try {
+    const response = await getVocabularyStatistics()
+    if (response.code === 200) {
+      statistics.value = response.data
+    }
+  } catch (error) {
+    console.error('加载统计数据失败:', error)
+  }
+}
+
 // 添加单词
-function addWord() {
-  if (!wordForm.value.word || !wordForm.value.meaning) {
-    ElMessage.warning('请填写单词和释义')
+async function addWord() {
+  if (!wordForm.value.word || !wordForm.value.meaningCn) {
+    ElMessage.warning('请填写单词和中文释义')
     return
   }
   
-  vocabularyList.value.push({
-    ...wordForm.value,
-    status: 'learning'
-  })
-  
-  showAddDialog.value = false
-  wordForm.value = { word: '', phonetic: '', meaning: '', scene: '' }
-  ElMessage.success('添加成功')
+  try {
+    const response = await addVocabulary(wordForm.value)
+    if (response.code === 200) {
+      ElMessage.success('添加成功')
+      showAddDialog.value = false
+      wordForm.value = {
+        word: '',
+        phoneticUs: '',
+        phoneticUk: '',
+        partOfSpeech: '',
+        meaningCn: '',
+        meaningEn: '',
+        examples: '',
+        sceneId: '',
+        difficulty: '',
+        notes: ''
+      }
+      // 重新加载列表和统计
+      loadVocabularies()
+      loadStatistics()
+    }
+  } catch (error) {
+    console.error('添加单词失败:', error)
+    ElMessage.error('添加失败')
+  }
 }
 
 // 编辑单词
-function editWord(row) {
-  ElMessage.info('编辑功能开发中')
+async function editWord(row) {
+  editForm.value = {
+    id: row.id,
+    word: row.word,
+    phoneticUs: row.phoneticUs || '',
+    phoneticUk: row.phoneticUk || '',
+    partOfSpeech: row.partOfSpeech || '',
+    meaningCn: row.meaningCn,
+    meaningEn: row.meaningEn || '',
+    examples: row.examples || '',
+    sceneId: row.sceneId || '',
+    difficulty: row.difficulty || '',
+    notes: row.notes || ''
+  }
+  showEditDialog.value = true
+}
+
+// 更新单词
+async function updateWord() {
+  if (!editForm.value.word || !editForm.value.meaningCn) {
+    ElMessage.warning('请填写单词和中文释义')
+    return
+  }
+  
+  try {
+    const response = await updateVocabulary(editForm.value.id, editForm.value)
+    if (response.code === 200) {
+      ElMessage.success('更新成功')
+      showEditDialog.value = false
+      // 重新加载列表
+      loadVocabularies()
+    }
+  } catch (error) {
+    console.error('更新单词失败:', error)
+    ElMessage.error('更新失败')
+  }
 }
 
 // 删除单词
-function deleteWord(row) {
-  const index = vocabularyList.value.indexOf(row)
-  if (index > -1) {
-    vocabularyList.value.splice(index, 1)
-    ElMessage.success('删除成功')
+async function deleteWord(row) {
+  try {
+    await ElMessageBox.confirm('确定要删除这个单词吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    
+    const response = await deleteVocabulary(row.id)
+    if (response.code === 200) {
+      ElMessage.success('删除成功')
+      // 重新加载列表和统计
+      loadVocabularies()
+      loadStatistics()
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('删除单词失败:', error)
+      ElMessage.error('删除失败')
+    }
   }
+}
+
+// 搜索
+function handleSearch() {
+  pagination.value.pageNum = 1
+  loadVocabularies()
+}
+
+// 分页改变
+function handlePageChange(pageNum) {
+  pagination.value.pageNum = pageNum
+  loadVocabularies()
+}
+
+// 获取掌握状态标签
+function getMasteryLevelTag(level) {
+  switch (level) {
+    case 0:
+      return { text: '未学习', type: 'info' }
+    case 1:
+      return { text: '学习中', type: 'warning' }
+    case 2:
+      return { text: '已掌握', type: 'success' }
+    case 3:
+      return { text: '需复习', type: 'danger' }
+    default:
+      return { text: '未知', type: 'info' }
+  }
+}
+
+// 获取场景名称
+function getSceneName(sceneId) {
+  const scene = sceneOptions.find(s => s.value === sceneId)
+  return scene ? scene.label : sceneId || '未分类'
 }
 </script>
 
