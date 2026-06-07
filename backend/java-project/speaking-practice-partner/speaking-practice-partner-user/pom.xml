@@ -19,17 +19,14 @@
     <description>用户模块 - 用户管理、账户管理</description>
 
     <dependencies>
+        <!-- 公共模块 -->
         <dependency>
             <groupId>com.speakingpractice</groupId>
             <artifactId>speaking-practice-partner-common</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.speakingpractice</groupId>
-            <artifactId>speaking-practice-partner-domain</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.speakingpractice</groupId>
-            <artifactId>speaking-practice-partner-infrastructure</artifactId>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
         </dependency>
     </dependencies>
 
