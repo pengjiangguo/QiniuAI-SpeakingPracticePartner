@@ -3,6 +3,7 @@ package com.speakingpractice.partner.user.controller;
 import com.speakingpractice.partner.common.result.Result;
 import com.speakingpractice.partner.user.domain.dto.UserLoginDTO;
 import com.speakingpractice.partner.user.domain.dto.UserRegisterDTO;
+import com.speakingpractice.partner.user.domain.dto.UserUpdateDTO;
 import com.speakingpractice.partner.user.domain.vo.UserVO;
 import com.speakingpractice.partner.user.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -95,6 +96,23 @@ public class UserController {
             return Result.success(userVO);
         } catch (Exception e) {
             log.error("查询用户信息失败: {}", e.getMessage());
+            return Result.fail(e.getMessage());
+        }
+    }
+
+    /**
+     * 更新用户信息
+     *
+     * @param updateDTO 更新信息
+     * @return 用户信息
+     */
+    @PutMapping("/info")
+    public Result<UserVO> updateUser(@Valid @RequestBody UserUpdateDTO updateDTO) {
+        try {
+            UserVO userVO = userService.updateUser(updateDTO);
+            return Result.success("更新成功", userVO);
+        } catch (Exception e) {
+            log.error("更新用户信息失败: {}", e.getMessage());
             return Result.fail(e.getMessage());
         }
     }

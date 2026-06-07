@@ -1,11 +1,13 @@
 package com.speakingpractice.partner.user.service.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.crypto.digest.BCrypt;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.speakingpractice.partner.common.enums.ResultCode;
 import com.speakingpractice.partner.common.exception.BusinessException;
 import com.speakingpractice.partner.user.domain.dto.UserLoginDTO;
 import com.speakingpractice.partner.user.domain.dto.UserRegisterDTO;
+import com.speakingpractice.partner.user.domain.dto.UserUpdateDTO;
 import com.speakingpractice.partner.user.domain.entity.User;
 import com.speakingpractice.partner.user.domain.vo.UserVO;
 import com.speakingpractice.partner.user.mapper.UserMapper;
@@ -181,6 +183,63 @@ public class UserServiceImpl implements UserService {
         }
 
         // 2. 返回用户信息
+        UserVO userVO = new UserVO();
+        BeanUtils.copyProperties(user, userVO);
+
+        return userVO;
+    }
+
+    /**
+     * 更新用户信息
+     *
+     * @param updateDTO 更新信息
+     * @return 用户信息
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public UserVO updateUser(UserUpdateDTO updateDTO) {
+        String userId = StpUtil.getLoginIdAsString();
+        log.info("更新用户信息，用户ID: {}", userId);
+
+        // 1. 查询用户
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getId, userId);
+        queryWrapper.eq(User::getDeleted, 0);
+        User user = userMapper.selectOne(queryWrapper);
+
+        if (user == null) {
+            log.warn("用户不存在，用户ID: {}", userId);
+            throw new BusinessException(ResultCode.USER_NOT_EXISTS);
+        }
+
+        // 2. 更新用户信息
+        if (updateDTO.getNickname() != null) {
+            user.setNickname(updateDTO.getNickname());
+        }
+        if (updateDTO.getAvatar() != null) {
+            user.setAvatar(updateDTO.getAvatar());
+        }
+        if (updateDTO.getNativeLanguage() != null) {
+            user.setNativeLanguage(updateDTO.getNativeLanguage());
+        }
+        if (updateDTO.getEnglishLevel() != null) {
+            user.setEnglishLevel(updateDTO.getEnglishLevel());
+        }
+        if (updateDTO.getLearningGoal() != null) {
+            user.setLearningGoal(updateDTO.getLearningGoal());
+        }
+        user.setUpdatedAt(LocalDateTime.now());
+
+        // 3. 保存更新
+        int result = userMapper.updateById(user);
+        if (result <= 0) {
+            log.error("更新用户信息失败，用户ID: {}", userId);
+            throw new BusinessException("更新用户信息失败");
+        }
+
+        log.info("更新用户信息成功，用户ID: {}", userId);
+
+        // 4. 返回用户信息
         UserVO userVO = new UserVO();
         BeanUtils.copyProperties(user, userVO);
 
