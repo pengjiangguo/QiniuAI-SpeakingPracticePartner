@@ -75,3 +75,14 @@ export function updateEnglishLevel(englishLevel) {
 export function updateLearningGoal(learningGoal) {
   return updateUserInfo({ learningGoal })
 }
+
+/**
+ * 重置用户密码
+ * @param {Object} data - 密码重置数据
+ * @param {String} data.oldPassword - 原密码
+ * @param {String} data.newPassword - 新密码
+ * @returns {Promise}
+ */
+export function resetPassword(data) {
+  return api.put('/user/password', data)
+}
