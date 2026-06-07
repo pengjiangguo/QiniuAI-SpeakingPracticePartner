@@ -25,6 +25,18 @@ const routes = [
     name: 'Profile',
     component: () => import('@/views/Profile.vue'),
     meta: { title: '个人主页 - AI口语陪练', requiresAuth: true }
+  },
+  {
+    path: '/history',
+    name: 'History',
+    component: () => import('@/views/History.vue'),
+    meta: { title: '对话历史 - AI口语陪练', requiresAuth: true }
+  },
+  {
+    path: '/chat/:id',
+    name: 'ChatDetail',
+    component: () => import('@/views/ChatDetail.vue'),
+    meta: { title: '对话详情 - AI口语陪练', requiresAuth: true }
   }
 ]
 

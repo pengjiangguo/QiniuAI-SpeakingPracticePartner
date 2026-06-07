@@ -73,8 +73,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import {
   ChatDotRound,
   Microphone,
@@ -93,6 +93,7 @@ import HistoryPanel from '@/components/HistoryPanel.vue'
 import SettingsPanel from '@/components/SettingsPanel.vue'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 
 // 用户头像
@@ -117,6 +118,14 @@ const functionTabs = [
 
 // 设置抽屉
 const showSettings = ref(false)
+
+// 页面加载时检查 URL 参数
+onMounted(() => {
+  const tab = route.query.tab
+  if (tab && functionTabs.some(t => t.key === tab)) {
+    currentTab.value = tab
+  }
+})
 </script>
 
 <style scoped>
