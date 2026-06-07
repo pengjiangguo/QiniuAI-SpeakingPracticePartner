@@ -101,10 +101,23 @@
           <div 
             v-for="message in messagesList" 
             :key="message.id"
-            :class="['message-item', message.role]"
+            :class="['message-item', message.role.toLowerCase()]"
           >
-            <div class="message-role">{{ message.role === 'user' ? '我' : 'AI' }}</div>
-            <div class="message-text">{{ message.content }}</div>
+            <div class="message-header">
+              <div class="message-avatar">
+                {{ message.role === 'USER' ? '👤' : '🤖' }}
+              </div>
+              <div class="message-role">{{ message.role === 'USER' ? '我' : 'AI助手' }}</div>
+            </div>
+            <div class="message-content">
+              <div class="message-text">{{ message.content }}</div>
+              <div class="message-meta">
+                <span class="message-time">{{ formatTime(message.createdAt) }}</span>
+                <span v-if="message.pronunciationScore" class="message-score">
+                  发音评分: {{ message.pronunciationScore }}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -246,6 +259,15 @@ function formatDate(date) {
   const hours = String(d.getHours()).padStart(2, '0')
   const minutes = String(d.getMinutes()).padStart(2, '0')
   return `${year}-${month}-${day} ${hours}:${minutes}`
+}
+
+// 格式化时间
+function formatTime(date) {
+  if (!date) return ''
+  const d = new Date(date)
+  const hours = String(d.getHours()).padStart(2, '0')
+  const minutes = String(d.getMinutes()).padStart(2, '0')
+  return `${hours}:${minutes}`
 }
 
 // 格式化时长
@@ -429,7 +451,8 @@ function getScoreType(score) {
 .detail-messages {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
+  padding: 10px 0;
 }
 
 .message-item {
@@ -438,30 +461,105 @@ function getScoreType(score) {
   gap: 8px;
 }
 
+.message-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.message-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  background: #f5f7fa;
+}
+
+.message-item.user .message-avatar {
+  background: #ecf5ff;
+}
+
+.message-item.assistant .message-avatar {
+  background: #f0f9ff;
+}
+
+.message-item.user {
+  display: flex;
+  /* flex-direction: row-reverse; */
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.message-item.user .message-header {
+  flex-direction: row-reverse;
+}
+
+.message-item.user .message-content {
+  align-items: flex-end;
+}
+
 .message-role {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  color: #909399;
+  color: #606266;
+}
+
+.message-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .message-text {
-  padding: 12px;
-  border-radius: 8px;
+  padding: 12px 16px;
+  border-radius: 12px;
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.8;
+  word-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 .message-item.user .message-text {
   background: #ecf5ff;
   color: #409eff;
   align-self: flex-end;
-  max-width: 70%;
+  max-width: 80%;
+  border-bottom-right-radius: 4px;
 }
 
 .message-item.assistant .message-text {
   background: #f5f7fa;
-  color: #606266;
+  color: #303133;
   align-self: flex-start;
-  max-width: 70%;
+  max-width: 80%;
+  border-bottom-left-radius: 4px;
+}
+
+.message-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: #909399;
+}
+
+.message-item.user .message-meta {
+  align-self: flex-end;
+}
+
+.message-item.assistant .message-meta {
+  align-self: flex-start;
+}
+
+.message-time {
+  opacity: 0.8;
+}
+
+.message-score {
+  color: #67c23a;
+  font-weight: 500;
 }
 </style>
