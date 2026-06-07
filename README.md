@@ -308,36 +308,6 @@ python run.py
 - **API 文档（ReDoc）**：http://localhost:8000/redoc
 - **接口路径**：http://localhost:8000/api/v1
 
-### 6. 完整启动流程
-
-按以下顺序启动所有服务：
-
-```bash
-# 1. 启动 Redis
-redis-server
-
-# 2. 启动 MySQL（确保已运行）
-
-# 3. 启动 Python AI 服务
-1.
-先启动language-tool服务
-
-2.
-cd backend/python-project/speaking-practice-partner
-source venv/bin/activate  # Windows: venv\Scripts\activate
-uvicorn main:app --reload --port 8000
-
-# 4. 启动 Java 后端（新终端）
-cd backend/java-project/speaking-practice-partner/speaking-practice-partner-web
-mvn spring-boot:run
-
-# 5. 启动前端（新终端）
-cd frontend
-npm run dev
-# 或桌面应用模式
-npm run electron:dev
-```
-
 ## 配置说明
 
 ### 腾讯云配置
@@ -558,25 +528,16 @@ pytest tests/
 
 ## 项目截图
 
-（待补充）
-
-## 贡献指南
-
-1. Fork 本仓库
-2. 创建特性分支：`git checkout -b feature/your-feature`
-3. 提交更改：`git commit -m 'Add some feature'`
-4. 推送分支：`git push origin feature/your-feature`
-5. 提交 Pull Request
+<img width="1887" height="1252" alt="image" src="https://github.com/user-attachments/assets/17b57e43-e03a-45c8-80a5-7fa60aa3d8f7" />
+<img width="1887" height="1252" alt="image" src="https://github.com/user-attachments/assets/e86cf197-1b14-4378-9257-91f39726911b" />
+<img width="1887" height="1256" alt="image" src="https://github.com/user-attachments/assets/3be8df1c-5159-4131-91df-2930a70041de" />
+<img width="1888" height="1251" alt="image" src="https://github.com/user-attachments/assets/4b084e72-7802-4d43-be25-06b1a2da43ee" />
+<img width="1887" height="1250" alt="image" src="https://github.com/user-attachments/assets/47f745fd-e665-471c-9577-37348fe55d70" />
+<img width="1893" height="1254" alt="image" src="https://github.com/user-attachments/assets/bb8c5a90-1a57-46e2-9260-605dd6154b2a" />
+<img width="1889" height="1254" alt="image" src="https://github.com/user-attachments/assets/355eb250-6831-4237-9911-6ed84ed4aaf6" />
 
 ## 许可证
 
 MIT License
-
-## 联系方式
-
-- 项目团队：Speaking Practice Partner Team
-- 实训营：七牛云 x XEngineer 暑假实训营
-
----
 
 **注意**：本项目仅供学习和研究使用，请勿用于商业用途。
