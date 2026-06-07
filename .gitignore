@@ -7,6 +7,7 @@ dist/
 target/
 *.class
 *.jar
+sql/
 
 # Python
 __pycache__/
