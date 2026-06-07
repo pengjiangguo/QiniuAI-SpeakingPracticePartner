@@ -1,4 +1,4 @@
-# AI口语陪练
+# AI口语陪练桌面应用
 
 ## 项目介绍
 
@@ -123,7 +123,7 @@ qiniuProject/
 
 ```bash
 git clone <repository-url>
-cd qiniuProject
+cd <project-name>
 ```
 
 ### 2. 数据库初始化
@@ -135,7 +135,7 @@ CREATE DATABASE speaking_practice_partner CHARACTER SET utf8mb4 COLLATE utf8mb4_
 
 # 导入数据表
 USE speaking_practice_partner;
-SOURCE backend/java-project/speaking-practice-partner/docs/chat_tables.sql;
+SOURCE sqls/speaking_practice_partner.sql;
 ```
 
 ### 3. 前端启动
@@ -149,42 +149,17 @@ npm install
 
 #### 3.2 配置环境变量
 
-创建 `.env.development` 文件（已存在，根据需要修改）：
-
-```env
-# API 基础路径
-VITE_API_BASE_URL=http://localhost:8080/sp/api
-
-# Python AI 服务地址
-VITE_PYTHON_SERVICE_URL=http://localhost:8000
-
-# 腾讯云配置（语音识别、口语评测、语音合成）
-VITE_TENCENT_SECRET_ID=your_secret_id
-VITE_TENCENT_SECRET_KEY=your_secret_key
-VITE_TENCENT_ASR_APP_ID=your_app_id
-
-# DeepSeek API 配置
-VITE_DEEPSEEK_API_KEY=your_api_key
-VITE_DEEPSEEK_BASE_URL=https://api.deepseek.com/v1
-```
+`.env.development` 文件（默认即可）：
 
 #### 3.3 启动开发服务器
 
-**方式一：Web 开发模式**
-
-```bash
-npm run dev
-```
-
-访问：http://localhost:5173
-
-**方式二：Electron 桌面应用模式**
+**方式一：Electron 桌面应用模式**
 
 ```bash
 npm run electron:dev
 ```
 
-这将同时启动 Vite 开发服务器和 Electron 应用。
+启动Electron 应用。
 
 ### 4. 后端启动（Java Spring Boot）
 
@@ -207,6 +182,8 @@ spring:
 ```
 
 #### 4.2 配置 Python 服务地址
+
+- 这里采用默认配置，无需修改。
 
 ```yaml
 python:
@@ -234,7 +211,7 @@ mvn spring-boot:run
 
 启动成功后访问：
 - **API 文档**：http://localhost:8080/sp/doc.html
-- **接口路径**：http://localhost:8080/sp/api
+- **接口路径**：http://localhost:8080/sp
 
 ### 5. 后端启动（Python AI 服务）
 
@@ -246,23 +223,33 @@ python -m venv venv
 
 # Windows
 venv\Scripts\activate
-
-# Linux/Mac
-source venv/bin/activate
 ```
+
+- 或者打开PyCharm，选择 `backend/python-project/speaking-practice-partner` 作为项目目录。
+> 1.创建本地虚拟环境
+
 
 #### 5.2 安装依赖
 
 ```bash
 pip install -r requirements.txt
 
-# 下载 spaCy 英语模型
-python -m spacy download en_core_web_sm
+# 安装本地 spaCy 模型包，在 model 目录下下载的模型包
+pip install "model\en_core_web_sm-3.7.1-py3-none-any.whl"
 ```
 
-#### 5.3 配置环境变量
+- 下载language-tool服务
+```bash
+下载链接：
+https://languagetool.org/download/LanguageTool-6.6.zip
 
-创建 `.env` 文件（或修改 `.env.development`）：
+解压到：
+backend/python-project/speaking-practice-partner/tools/
+```
+
+#### 5.3 配置环境变量，无需修改
+
+`.env` 文件（默认即可）：
 
 ```env
 # 应用配置
@@ -290,6 +277,15 @@ REDIS_PORT=6379
 REDIS_DB=1
 ```
 
+### 启动language-tool服务
+```bash
+cmd
+
+cd backend\python-project\speaking-practice-partner\tools\LanguageTool-6.6\LanguageTool-6.6
+
+java -jar languagetool-server.jar --port 8081 --allow-origin "*"
+```
+
 #### 5.4 启动 Python 服务
 
 **方式一：使用 uvicorn**
@@ -302,12 +298,6 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 ```bash
 python run.py
-```
-
-**方式三：直接运行 main.py**
-
-```bash
-python main.py
 ```
 
 启动成功后访问：
@@ -326,6 +316,10 @@ redis-server
 # 2. 启动 MySQL（确保已运行）
 
 # 3. 启动 Python AI 服务
+1.
+先启动language-tool服务
+
+2.
 cd backend/python-project/speaking-practice-partner
 source venv/bin/activate  # Windows: venv\Scripts\activate
 uvicorn main:app --reload --port 8000
