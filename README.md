@@ -437,6 +437,88 @@ uvicorn main:app --reload --port 8000
 pytest tests/
 ```
 
+## 第三方库和框架说明
+
+本项目使用了多个开源第三方库和框架，以下是详细说明：
+
+### 前端第三方库
+
+| 库名称 | 版本 | 用途 | 许可证 |
+|--------|------|------|--------|
+| Vue.js | 3.4.0 | 渐进式 JavaScript 框架，用于构建用户界面 | MIT |
+| Vite | 5.0.0 | 下一代前端构建工具，提供快速的开发体验 | MIT |
+| Element Plus | 2.5.0 | 基于 Vue 3 的组件库，提供丰富的 UI 组件 | MIT |
+| Pinia | 2.1.7 | Vue 3 的状态管理库，用于管理应用状态 | MIT |
+| Vue Router | 4.2.5 | Vue.js 官方路由管理器 | MIT |
+| ECharts | 6.1.0 | 可视化图表库，用于数据可视化展示 | Apache-2.0 |
+| Electron | 42.0.0 | 跨平台桌面应用框架，用于构建桌面应用 | MIT |
+| Axios | 1.6.0 | HTTP 客户端，用于发送 HTTP 请求 | MIT |
+| CryptoJS | 4.2.0 | JavaScript 加密库，用于生成签名 | MIT |
+| Socket.io-client | 4.7.0 | WebSocket 客户端，用于实时通信 | MIT |
+
+### Java 后端第三方库
+
+| 库名称 | 版本 | 用途 | 许可证 |
+|--------|------|------|--------|
+| Spring Boot | 3.1.5 | 简化 Spring 应用开发的框架 | Apache-2.0 |
+| Spring Cloud | - | 微服务框架，提供服务治理能力 | Apache-2.0 |
+| MyBatis-Plus | - | MyBatis 增强工具，简化数据库操作 | Apache-2.0 |
+| MySQL Connector | 8.0 | MySQL 数据库驱动 | GPL-2.0 |
+| Lettuce | - | Redis 客户端，用于 Redis 连接 | Apache-2.0 |
+| Knife4j | - | Swagger 增强 UI，用于 API 文档展示 | Apache-2.0 |
+| Lombok | - | Java 库，简化 Java 代码编写 | MIT |
+| Jackson | - | JSON 序列化/反序列化库 | Apache-2.0 |
+| Hutool | - | Java 工具类库，提供常用工具方法 | Apache-2.0 |
+
+### Python 后端第三方库
+
+| 库名称 | 版本 | 用途 | 许可证 |
+|--------|------|------|--------|
+| FastAPI | 0.109.0 | 现代 Web 框架，用于构建 API | MIT |
+| Uvicorn | 0.27.0 | ASGI 服务器，用于运行 FastAPI | BSD-3-Clause |
+| Pydantic | 2.5.3 | 数据验证库，用于数据模型验证 | MIT |
+| spaCy | 3.7.4 | 工业级 NLP 库，用于自然语言处理 | MIT |
+| NLTK | 3.8.1 | 自然语言工具包，用于 NLP 任务 | Apache-2.0 |
+| language-tool-python | 3.4.0 | 语法检查库，用于英语语法纠错 | LGPL-3.0 |
+| PyTorch | 2.2.0 | 深度学习框架，用于机器学习模型 | BSD-3-Clause |
+| Transformers | 4.37.0 | Hugging Face 模型库，用于预训练模型 | Apache-2.0 |
+| librosa | 0.10.1 | 音频处理库，用于音频分析 | ISC |
+| soundfile | 0.12.1 | 音频文件读写库 | BSD-3-Clause |
+| pandas | 2.2.0 | 数据分析库，用于数据处理 | BSD-3-Clause |
+| scikit-learn | 1.4.0 | 机器学习库，用于模型训练和预测 | BSD-3-Clause |
+| NumPy | 1.26.3 | 科学计算库，用于数值计算 | BSD-3-Clause |
+| SciPy | 1.12.0 | 科学计算库，用于数学算法 | BSD-3-Clause |
+| httpx | 0.26.0 | HTTP 客户端，支持异步请求 | BSD-3-Clause |
+| aiohttp | 3.9.1 | 异步 HTTP 客户端/服务器 | Apache-2.0 |
+| loguru | 0.7.2 | 日志库，用于应用日志记录 | MIT |
+| python-dotenv | 1.0.0 | 环境变量管理库 | BSD-3-Clause |
+
+### 云服务和 API
+
+| 服务名称 | 提供商 | 用途 | 官网 |
+|---------|--------|------|------|
+| 实时语音识别（ASR） | 腾讯云 | 实时语音转文字 | https://cloud.tencent.com/product/asr |
+| 口语评测（SOE） | 腾讯云 | 发音评分和评测 | https://cloud.tencent.com/product/soe |
+| 语音合成（TTS） | 腾讯云 | 文字转语音 | https://cloud.tencent.com/product/tts |
+| DeepSeek API | DeepSeek | AI 对话和大语言模型 | https://www.deepseek.com/ |
+
+### 许可证说明
+
+本项目使用的第三方库和框架主要采用以下开源许可证：
+
+- **MIT License**：最宽松的开源许可证，允许商业使用
+- **Apache-2.0**：允许商业使用，提供专利授权保护
+- **BSD-3-Clause**：类似 MIT，允许商业使用
+- **GPL-2.0**：严格的开源许可证，衍生作品必须开源
+- **LGPL-3.0**：较宽松的 GPL，允许动态链接
+- **ISC**：功能上等同于 MIT License
+
+**重要提示**：
+1. 使用本项目时，请遵守各第三方库的许可证要求
+2. GPL 许可证的库（如 MySQL Connector）要求衍生作品开源
+3. 商业使用前请仔细检查许可证兼容性
+4. 部分库可能需要保留版权声明和许可证文本
+
 ## 常见问题
 
 ### 1. 前端无法连接后端
